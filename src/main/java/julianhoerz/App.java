@@ -178,6 +178,8 @@ public final class App {
         System.out.println("Postprocessing in progress...");
 
         idx = 0;
+
+
         Offset_Frames_Final = new Integer[Frames.size()][2];
 
         Node_Id_Final = new Long[Nodes.size()];
@@ -185,6 +187,8 @@ public final class App {
         Offset_Edges_Final = new Integer[Nodes.size()];
         
         Edges_Final = new Integer[EdgesArrayList.size()];
+
+
 
         for(Integer frame_id : Frames.keySet()){
             Offset_Frames_Final[idx][0] = frame_id;
@@ -235,6 +239,7 @@ public final class App {
             }
         }
 
+        Edges_Length_Final = new Double[Edges_Final.length];
         
 
         calculateEdgeLength();
@@ -250,6 +255,26 @@ public final class App {
         System.out.println("Save file...");
 
         OutputStream output = new FileOutputStream("file.bin");
+
+
+        //Write Length of Arrays
+        byte[] bytearray = new byte[4];
+        ByteBuffer.wrap(bytearray).putInt(Offset_Frames_Final.length);
+        for(int p=0; p<4; p++){
+            output.write((int) bytearray[p]);
+        }
+        bytearray = new byte[4];
+        ByteBuffer.wrap(bytearray).putInt(Node_Id_Final.length);
+        for(int p=0; p<4; p++){
+            output.write((int) bytearray[p]);
+        }
+        bytearray = new byte[4];
+        ByteBuffer.wrap(bytearray).putInt(Edges_Final.length);
+        for(int p=0; p<4; p++){
+            output.write((int) bytearray[p]);
+        }
+
+
 
         System.out.println("Save \"Offset_Frames\"");
 
@@ -317,6 +342,17 @@ public final class App {
             }
         }
 
+
+        System.out.println("Save \"Edges_Length\"");
+
+        for(int i=0; i < Edges_Length_Final.length ; i ++){
+            byte[] bytes = new byte[8];
+            ByteBuffer.wrap(bytes).putDouble(Edges_Length_Final[i]);
+            for(int p=0; p<8; p++){
+                output.write((int) bytes[p]);
+            }
+        }
+
         output.close();
 
         System.out.println("Program Completeted");
@@ -351,7 +387,7 @@ public final class App {
 
     private static void calculateEdgeLength(){
 
-        Edges_Length_Final = new Double[Edges_Final.length];
+        
 
         for(int i = 0; i < Edges_Final.length; i ++){
             double lat1 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][0])][0];
@@ -387,48 +423,26 @@ public final class App {
     public static void main(String[] args) throws IOException {
         System.out.println("Build New Graph");
 
-        if(args[0] != null){
-            System.out.println("Filename: " + args[0]);
+        Graph graph = new Graph();
 
-            buildGraph(args[0]);
+        String filename = args[0];
+        String[] parts = filename.split("\\.");
+
+        if(parts[1] != null){
+            System.out.println("Filename: " + filename);
+
+            if(parts[1].equals("pbf")){
+                buildGraph(filename);
+            }
+            else{
+                graph.readBin(filename);
+            }
         }
         else{
-            System.out.println("No Filename...");
+            System.out.println("No or wrong filename...");
         }
 
-    }
 
-
-
-
-    public static void readit(){
-        // DataInputStream data = new DataInputStream(new FileInputStream("file.bin"));
-
-        // int input = data.read();
-
-        // byte[] doublebuff = new byte[8];
-        // double[] myarr = new double[15];
-
-        // int cnt = 0;
-        // int cnt2 = 0;
-
-        // while(input != -1){
-        //     doublebuff[cnt] = (byte) input;
-
-        //     cnt ++;
-
-        //     if(cnt == 8){
-        //         cnt = 0;
-        //         myarr[cnt2] = ByteBuffer.wrap(doublebuff).getDouble();
-        //         System.out.println("Myarr[" + cnt2 + "]: " + myarr[cnt2]);
-        //         cnt2 ++;
-        //     }
-
-        //     input = data.read();
-
-        // }
-
-        // System.out.print("" + myarr[0]);
     }
 
 
