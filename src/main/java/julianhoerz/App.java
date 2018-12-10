@@ -26,32 +26,40 @@ public final class App {
     public static void main(String[] args) throws IOException {
         System.out.println("Starting Program...");
 
+        if(args.length == 0){
+            System.out.println("No filename specified.");
+            System.out.println("ERROR: Program Stopped.");
+            return;
+        }
+
         String filename = args[0];
         String[] parts = filename.split("\\.");
 
-        graph = new Graph();        
+        graph = new Graph();
 
-        if(parts[1] != null){
-            System.out.println("Filename: " + filename);
-
-            if(parts[1].equals("pbf")){
-                PbfFileReader reader = new PbfFileReader(graph);
-                reader.buildGraph(filename);
-            }
-            else if(parts[1].equals("bin")){
-                graph.readBin(filename);
-            }
-
-            // HttpServer server = HttpServer.create(new InetSocketAddress(3000), 0);
-            // server.createContext("/api", new MyHandler());
-            // server.setExecutor(null); // creates a default executor
-            // server.start();
-
-
+        if(parts.length <= 1){
+            System.out.println("Wrong filename. Please use \"example.bin\" or \"example.pbf\".");
+            System.out.println("ERROR: Program Stopped.");
+            return;
         }
-        else{
-            System.out.println("No or wrong filename...");
+
+
+        
+        System.out.println("Filename: " + filename);
+
+        if(parts[1].equals("pbf")){
+            PbfFileReader reader = new PbfFileReader(graph);
+            reader.buildGraph(filename);
         }
+        else if(parts[1].equals("bin")){
+            graph.readBin(filename);
+        }
+
+        // HttpServer server = HttpServer.create(new InetSocketAddress(3000), 0);
+        // server.createContext("/api", new MyHandler());
+        // server.setExecutor(null); // creates a default executor
+        // server.start();
+
 
 
     }
