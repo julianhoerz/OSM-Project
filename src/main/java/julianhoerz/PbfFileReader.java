@@ -87,18 +87,6 @@ public class PbfFileReader {
 
 
     
-    private static boolean checkStreet(OsmWay way){
-        for(int i = 0; i < way.getNumberOfTags(); i ++){
-            OsmTag tag = way.getTag(i);
-            if(tag.getKey().equals("highway")){
-                boolean ret = Arrays.stream(HighwayTagsArray).anyMatch(tag.getValue()::equals);
-                return ret;
-            }
-        }
-        return false;
-    }
-
-
     public void buildGraph(String filename) throws IOException {
         InputStream input = new BufferedInputStream(new FileInputStream(filename));
         PbfIterator iterator = new PbfIterator(input, true);
@@ -199,31 +187,40 @@ public class PbfFileReader {
 
         idx = 0;
 
+        graph.initOffsetFrames(Frames.size());
+        int FramesLength = Frames.size();
+        graph.initNodes(Nodes.size());
+        int NodesLength = Nodes.size();
+        graph.initEdges(EdgesArrayList.size());
+        int EdgesLength = EdgesArrayList.size();
 
-        Offset_Frames_Final = new Integer[Frames.size()][2];
+       // Offset_Frames_Final = new Integer[Frames.size()][2];
 
-        Node_Id_Final = new Long[Nodes.size()];
-        Node_Coords_Final = new Double[Nodes.size()][2];
-        Offset_Edges_Final = new Integer[Nodes.size()];
+        //Node_Id_Final = new Long[Nodes.size()];
+        //Node_Coords_Final = new Double[Nodes.size()][2];
+        // Offset_Edges_Final = new Integer[Nodes.size()];
         
-        Edges_Final = new Integer[EdgesArrayList.size()];
+        // Edges_Final = new Integer[EdgesArrayList.size()];
 
-
+        Integer[] sortFrames = new Integer[Frames.size()];
 
         for(Integer frame_id : Frames.keySet()){
-            Offset_Frames_Final[idx][0] = frame_id;
+            sortFrames[idx] = frame_id;
             idx ++;
         }
+
+        Arrays.sort(sortFrames);
 
         idx = 0;
 
         for(int i = 0 ; i < Frames.size(); i ++){
-            Offset_Frames_Final[i][1] = idx;
-            for(Long node_id : Frames.get(Offset_Frames_Final[i][0])){
-                Node_Id_Final[idx] = node_id;
+            graph.setOffsetFrames(i, sortFrames[i], idx);
+            for(Long node_id : Frames.get(sortFrames[i])){
+                graph.setNodeId(idx, node_id);
                 Integer index = Nodes.get(node_id);
-                Node_Coords_Final[idx][0] = Node_Coords[index][0];
-                Node_Coords_Final[idx][1] = Node_Coords[index][1];
+                Double lat = Node_Coords[index][0];
+                Double lng = Node_Coords[index][1];
+                graph.setNodeCoords(idx, lat, lng);
                 Nodes.put(node_id, idx);
                 idx ++;
             }
@@ -238,6 +235,8 @@ public class PbfFileReader {
             edge[1] = (long) Nodes.get(edge[1]);
         }
 
+        
+
         Nodes = null;
 
         EdgesArray = EdgesArrayList.toArray(new Long[EdgesArrayList.size()][2]);
@@ -251,136 +250,47 @@ public class PbfFileReader {
 
         idx = 0;
         
-        for(Integer i = 0; i < Node_Id_Final.length; i ++){
-            Offset_Edges_Final[i] = idx;
+        for(Integer i = 0; i < NodesLength; i ++){
+            graph.setOffsetEdges(i, idx);
+            // Offset_Edges_Final[i] = idx;
             while(idx < EdgesArray.length && EdgesArray[idx][0] == (long) i){
-                Edges_Final[idx] = Math.toIntExact(EdgesArray[idx][1]);
+                graph.setEdges(idx, Math.toIntExact(EdgesArray[idx][1]));
+                // Edges_Final[idx] = Math.toIntExact(EdgesArray[idx][1]);
                 idx ++;
             }
         }
 
-        Edges_Length_Final = new Double[Edges_Final.length];
+        // Edges_Length_Final = new Double[EdgesLength];
         
 
-        calculateEdgeLength();
+        calculateEdgeLength(EdgesLength);
 
         EdgesArray = null;
 
 
-        System.out.println("Number of Frames: " + Offset_Frames_Final.length);
-        System.out.println("Number of Nodes: " + Node_Id_Final.length);
-        System.out.println("Number of Edges: " + Edges_Final.length);
+        System.out.println("Number of Frames: " + FramesLength);
+        System.out.println("Number of Nodes: " + NodesLength);
+        System.out.println("Number of Edges: " + EdgesLength);
 
 
-        System.out.println("Save file...");
-
-        OutputStream output = new FileOutputStream("file.bin");
-
-
-        //Write Length of Arrays
-        byte[] bytearray = new byte[4];
-        ByteBuffer.wrap(bytearray).putInt(Offset_Frames_Final.length);
-        for(int p=0; p<4; p++){
-            output.write((int) bytearray[p]);
-        }
-        bytearray = new byte[4];
-        ByteBuffer.wrap(bytearray).putInt(Node_Id_Final.length);
-        for(int p=0; p<4; p++){
-            output.write((int) bytearray[p]);
-        }
-        bytearray = new byte[4];
-        ByteBuffer.wrap(bytearray).putInt(Edges_Final.length);
-        for(int p=0; p<4; p++){
-            output.write((int) bytearray[p]);
-        }
+        
+    }
 
 
-
-        System.out.println("Save \"Offset_Frames\"");
-
-        for(int i=0; i < Offset_Frames_Final.length ; i ++){
-            byte[] bytes = new byte[4];
-            ByteBuffer.wrap(bytes).putInt(Offset_Frames_Final[i][0]);
-            for(int p=0; p<4; p++){
-                output.write((int) bytes[p]);
-            }
-
-            ByteBuffer.wrap(bytes).putInt(Offset_Frames_Final[i][1]);
-            for(int p=0; p<4; p++){
-                output.write((int) bytes[p]);
-                
+    private boolean checkStreet(OsmWay way){
+        for(int i = 0; i < way.getNumberOfTags(); i ++){
+            OsmTag tag = way.getTag(i);
+            if(tag.getKey().equals("highway")){
+                boolean ret = Arrays.stream(HighwayTagsArray).anyMatch(tag.getValue()::equals);
+                return ret;
             }
         }
-
-
-        System.out.println("Save \"Node_Id\"");
-
-        for(int i=0; i < Node_Id_Final.length ; i ++){
-            byte[] bytes = new byte[8];
-            ByteBuffer.wrap(bytes).putLong(Node_Id_Final[i]);
-            for(int p=0; p<8; p++){
-                output.write((int) bytes[p]);
-            }
-        }
-
-
-        System.out.println("Save \"Node_Coords\"");
-
-        for(int i=0; i < Node_Coords_Final.length ; i ++){
-            byte[] bytes = new byte[8];
-            ByteBuffer.wrap(bytes).putDouble(Node_Coords_Final[i][0]);
-            for(int p=0; p<8; p++){
-                output.write((int) bytes[p]);
-            }
-
-            ByteBuffer.wrap(bytes).putDouble(Node_Coords_Final[i][1]);
-            for(int p=0; p<8; p++){
-                output.write((int) bytes[p]);
-                
-            }
-        }
-
-
-        System.out.println("Save \"Offset_Edges\"");
-
-        for(int i=0; i < Offset_Edges_Final.length ; i ++){
-            byte[] bytes = new byte[4];
-            ByteBuffer.wrap(bytes).putInt(Offset_Edges_Final[i]);
-            for(int p=0; p<4; p++){
-                output.write((int) bytes[p]);
-            }
-        }
-
-
-        System.out.println("Save \"Edges\"");
-
-        for(int i=0; i < Edges_Final.length ; i ++){
-            byte[] bytes = new byte[4];
-            ByteBuffer.wrap(bytes).putInt(Edges_Final[i]);
-            for(int p=0; p<4; p++){
-                output.write((int) bytes[p]);
-            }
-        }
-
-
-        System.out.println("Save \"Edges_Length\"");
-
-        for(int i=0; i < Edges_Length_Final.length ; i ++){
-            byte[] bytes = new byte[8];
-            ByteBuffer.wrap(bytes).putDouble(Edges_Length_Final[i]);
-            for(int p=0; p<8; p++){
-                output.write((int) bytes[p]);
-            }
-        }
-
-        output.close();
-
-        System.out.println("Program Completeted");
+        return false;
     }
 
 
 
-    private static int isTwoWay(OsmWay way){
+    private int isTwoWay(OsmWay way){
 
         for(int i = 0; i < way.getNumberOfTags(); i ++){
             OsmTag tag = way.getTag(i);
@@ -405,24 +315,29 @@ public class PbfFileReader {
     }
 
 
-    private static void calculateEdgeLength(){
+    private void calculateEdgeLength(int EdgesLength){
 
         
 
-        for(int i = 0; i < Edges_Final.length; i ++){
-            double lat1 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][0])][0];
-            double lng1 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][0])][1];
-            double lat2 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][1])][0];
-            double lng2 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][1])][1];
+        for(int i = 0; i < EdgesLength; i ++){
+            // double lat1 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][0])][0];
+            // double lng1 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][0])][1];
+            // double lat2 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][1])][0];
+            // double lng2 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][1])][1];
 
+            double lat1 = graph.getNodeLat(Math.toIntExact(EdgesArray[i][0]));
+            double lng1 = graph.getNodeLng(Math.toIntExact(EdgesArray[i][0]));
+            double lat2 = graph.getNodeLat(Math.toIntExact(EdgesArray[i][1]));
+            double lng2 = graph.getNodeLng(Math.toIntExact(EdgesArray[i][1]));
             double dist = calculateDistance(lat1, lng1, lat2, lng2);
 
-            Edges_Length_Final[i] = dist;
+            graph.setEdgesLength(i, dist);
+            // Edges_Length_Final[i] = dist;
         }
 
     }
 
-    private static double calculateDistance(double lat1, double lng1, double lat2, double lng2){
+    private double calculateDistance(double lat1, double lng1, double lat2, double lng2){
         double earthRadius = 6371000;
 
         double dLat = Math.toRadians(lat2-lat1);

@@ -25,155 +25,99 @@ public class Graph {
 
     }
 
-    public boolean readBin(String filename) throws IOException{
+    /** Offset Frames */
 
-        byte[] bytes = new byte[4];
-        byte[] bytes_8 = new byte[8];
-        int cnt = 0;
+    public void initOffsetFrames(int size){
+        Offset_Frames_Final = new Integer[size][2];
+    }
 
-        InputStream inputstream = new FileInputStream(filename);
+    public void setOffsetFrames(int index, int key, int offset){
+        Offset_Frames_Final[index][0] = key;
+        Offset_Frames_Final[index][1] = offset;
+    }
 
+    public Integer getOffsetFrames(int index, int select){
+        return Offset_Frames_Final[index][select];
+    }
 
-        
-        /** Read Length of Arrays */
-        int data = inputstream.read();
-        while(data != -1 && cnt < 4){
-            bytes[cnt] = (byte) data;
-            data = inputstream.read();
-            cnt ++;
-        }
-        int length = ByteBuffer.wrap(bytes).getInt();
-        
-        if(length <= 0){
-            return false;
-        }
-
-        Offset_Frames_Final = new Integer[length][2];
-
-        System.out.println("Number of Frames: " + length);
-
-
-        cnt = 0;
-        while(data != -1 && cnt < 4){
-            bytes[cnt] = (byte) data;
-            data = inputstream.read();
-            cnt ++;
-        }
-        length = ByteBuffer.wrap(bytes).getInt();
-        
-        if(length <= 0){
-            return false;
-        }
-
-        Node_Id_Final = new Long[length];
-        Node_Coords_Final = new Double[length][2];
-        Offset_Edges_Final = new Integer[length];
-
-        System.out.println("Number of Nodes: " + length);
+    public Integer getFramesLength(){
+        return Offset_Frames_Final.length;
+    }
 
 
 
-        cnt = 0;
-        while(data != -1 && cnt < 4){
-            bytes[cnt] = (byte) data;
-            data = inputstream.read();
-            cnt ++;
-        }
-        length = ByteBuffer.wrap(bytes).getInt();
-        
-        if(length <= 0){
-            return false;
-        }
-
-        Edges_Final = new Integer[length];
-        Edges_Length_Final = new Double[length];
-
-        System.out.println("Number of Edges: " + length);
 
 
-        /** Read Data */
-        System.out.println("Read \"Offset_Frames\"");
+    /** Nodes */
 
-        for(int i=0; i < Offset_Frames_Final.length ; i ++){
-            for(int p=0; p<4; p++){
-                bytes[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Offset_Frames_Final[i][0] = ByteBuffer.wrap(bytes).getInt();
+    public void initNodes(int size){
+        Node_Id_Final = new Long[size];
+        Node_Coords_Final = new Double[size][2];
+        Offset_Edges_Final = new Integer[size];
+    }
 
-            for(int p=0; p<4; p++){
-                bytes[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Offset_Frames_Final[i][1] = ByteBuffer.wrap(bytes).getInt();
-        }
+    public void setNodeId(int index, Long id){
+        Node_Id_Final[index] = id;
+    }
 
+    public void setNodeCoords(int index, Double lat, Double lng){
+        Node_Coords_Final[index][0] = lat;
+        Node_Coords_Final[index][1] = lng;
+    }
 
-        System.out.println("Read \"Node_Id\"");
+    public void setOffsetEdges(int index, int offset){
+        Offset_Edges_Final[index] = offset;
+    }
 
-        for(int i=0; i < Node_Id_Final.length ; i ++){
-            for(int p=0; p<8; p++){
-                bytes_8[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Node_Id_Final[i] = ByteBuffer.wrap(bytes_8).getLong();
-        }
+    public Double getNodeLat(int index){
+        return Node_Coords_Final[index][0];
+    }
 
+    public Double getNodeLng(int index){
+        return Node_Coords_Final[index][1];
+    }
 
-        System.out.println("Read \"Node_Coords\"");
+    public Long getNodeId(int index){
+        return Node_Id_Final[index];
+    }
 
-        for(int i=0; i < Node_Coords_Final.length ; i ++){
-            for(int p=0; p<8; p++){
-                bytes_8[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Node_Coords_Final[i][0] = ByteBuffer.wrap(bytes_8).getDouble();
+    public Integer getNodeOffset(int index){
+        return Offset_Edges_Final[index];
+    }
 
-            for(int p=0; p<8; p++){
-                bytes_8[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Node_Coords_Final[i][1] = ByteBuffer.wrap(bytes_8).getDouble();
-        }
+    public Integer getNodesLength(){
+        return Node_Id_Final.length;
+    }
 
 
-        System.out.println("Read \"Offset_Edges\"");
-
-        for(int i=0; i < Offset_Edges_Final.length ; i ++){
-            for(int p=0; p<4; p++){
-                bytes[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Offset_Edges_Final[i] = ByteBuffer.wrap(bytes).getInt();
-        }
 
 
-        System.out.println("Read \"Edges\"");
 
-        for(int i=0; i < Edges_Final.length ; i ++){
-            for(int p=0; p<4; p++){
-                bytes[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Edges_Final[i] = ByteBuffer.wrap(bytes).getInt();
-        }
+    /** Edges */
 
+    public void initEdges(int size){
+        Edges_Final = new Integer[size];
+        Edges_Length_Final = new Double[size];
+    }
 
-        System.out.println("Read \"Edges_Length\"");
+    public void setEdges(int index, int reference){
+        Edges_Final[index] = reference;
+    }
 
-        for(int i=0; i < Edges_Length_Final.length ; i ++){
-            for(int p=0; p<8; p++){
-                bytes_8[p] = (byte) data;
-                data = inputstream.read();
-            }
-            Edges_Length_Final[i] = ByteBuffer.wrap(bytes_8).getDouble();
-        }
+    public void setEdgesLength(int index, Double length){
+        Edges_Length_Final[index] = length;
+    }
 
-        inputstream.close();
+    public Integer getEdges(int index){
+        return Edges_Final[index];
+    }
 
-        System.out.println("Last data: " + data);
+    public Double getEdgesLength(int index){
+        return Edges_Length_Final[index];
+    }
 
-        return true;
+    public Integer getEdgesLength(){
+        return Edges_Final.length;
     }
 
 

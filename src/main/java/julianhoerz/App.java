@@ -50,10 +50,24 @@ public final class App {
         if(parts[1].equals("pbf")){
             PbfFileReader reader = new PbfFileReader(graph);
             reader.buildGraph(filename);
+
+            // Check for save file
+            if(args.length == 3){
+                if(args[1].equals("-save")){
+                    BinFileSaver saver = new BinFileSaver(graph);
+                    saver.saveFile(args[2]);
+                }
+            }
+
+
         }
         else if(parts[1].equals("bin")){
-            graph.readBin(filename);
+            BinFileReader reader = new BinFileReader(graph);
+            reader.readBin(filename);
+            //graph.readBin(filename);
         }
+
+
 
         // HttpServer server = HttpServer.create(new InetSocketAddress(3000), 0);
         // server.createContext("/api", new MyHandler());
