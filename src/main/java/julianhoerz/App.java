@@ -65,28 +65,17 @@ public final class App {
             BinFileReader reader = new BinFileReader(graph);
             reader.readBin(filename);
             //graph.readBin(filename);
+        } else{
+            System.out.println("Wrong filename ending. Please use \"example.bin\" or \"example.pbf\".");
+            System.out.println("ERROR: Program Stopped.");
+            return;
         }
 
+        
+        Server server = new Server(graph);
+        server.start();
 
 
-        // HttpServer server = HttpServer.create(new InetSocketAddress(3000), 0);
-        // server.createContext("/api", new MyHandler());
-        // server.setExecutor(null); // creates a default executor
-        // server.start();
-
-
-
-    }
-
-    static class MyHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange t) throws IOException {
-            String response = "This is the response";
-            t.sendResponseHeaders(200, response.length());
-            OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
-        }
     }
 
 

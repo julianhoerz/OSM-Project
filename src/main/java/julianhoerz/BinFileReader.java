@@ -2,9 +2,7 @@ package julianhoerz;
 
 
 
-import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -47,6 +45,7 @@ public class BinFileReader {
         int FramesLength = ByteBuffer.wrap(bytes).getInt();
         
         if(FramesLength <= 0){
+            inputstream.close();
             return false;
         }
 
@@ -64,6 +63,7 @@ public class BinFileReader {
         int NodesLength = ByteBuffer.wrap(bytes).getInt();
         
         if(NodesLength <= 0){
+            inputstream.close();
             return false;
         }
 
@@ -82,6 +82,7 @@ public class BinFileReader {
         int EdgesLength = ByteBuffer.wrap(bytes).getInt();
         
         if(EdgesLength <= 0){
+            inputstream.close();
             return false;
         }
 
