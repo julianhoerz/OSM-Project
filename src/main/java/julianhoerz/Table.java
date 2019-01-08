@@ -20,10 +20,20 @@ class Table implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange t) throws IOException {
+    public void handle(HttpExchange httpExchange) throws IOException {
+
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+        if (httpExchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,Authorization");
+            httpExchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
         String response = createResponse();
-        t.sendResponseHeaders(200, response.length());
-        OutputStream os = t.getResponseBody();
+        httpExchange.sendResponseHeaders(200, response.length());
+        OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
     }

@@ -108,6 +108,8 @@ public class BinFileReader {
             int offset = ByteBuffer.wrap(bytes).getInt();
 
             graph.setOffsetFrames(i, key, offset);
+
+            //System.out.println("" + key);
         }
 
 
