@@ -98,13 +98,15 @@ public class PbfFileReader {
                 OsmWay way = (OsmWay) container.getEntity();
                 if(checkStreet(way)){
                     for(int i = 0; i < way.getNumberOfNodes(); i ++){
-                        Nodes.put(way.getNodeId(i),-1);
+                       // Nodes.put(way.getNodeId(i),-1);
                     }
                 }
             }
         }
 
         input.close();
+        iterator = null;
+        input = null;
 
         Node_Coords = new Double[Nodes.size()][2];
         Node_Id = new Long[Nodes.size()];
@@ -238,6 +240,7 @@ public class PbfFileReader {
         
 
         Nodes = null;
+        System.gc();
 
         EdgesArray = EdgesArrayList.toArray(new Long[EdgesArrayList.size()][2]);
         EdgesArrayList = null;
@@ -271,6 +274,8 @@ public class PbfFileReader {
         System.out.println("Number of Frames: " + FramesLength);
         System.out.println("Number of Nodes: " + NodesLength);
         System.out.println("Number of Edges: " + EdgesLength);
+
+        System.out.println("Pbf File Reader finished.");
 
 
         

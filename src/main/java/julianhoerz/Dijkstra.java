@@ -49,6 +49,8 @@ class Dijkstra implements HttpHandler {
         String url = httpExchange.getRequestURI().toString();
         String[] parts = url.split("\\/");
 
+        String geojson = "no route found...";
+
         if(parts.length == 3){
             String[] parts2 = parts[2].split("\\,");
             if(parts2.length == 4){
@@ -60,7 +62,8 @@ class Dijkstra implements HttpHandler {
                 System.out.println("Start: " + this.startLat + ", " + this.startLng);
                 System.out.println("End: " + this.endLat + ", " + this.endLng);
                 
-                startDijkstra();
+                geojson = startDijkstra();
+                //System.out.println("" + geojson);
             }
         }
 
@@ -69,7 +72,7 @@ class Dijkstra implements HttpHandler {
 
         //System.out.println("URL: " + test);
 
-        String response = "This is response";
+        String response = geojson;
         httpExchange.sendResponseHeaders(200, response.length());
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());
@@ -77,11 +80,11 @@ class Dijkstra implements HttpHandler {
     }
 
 
-    private void startDijkstra(){
+    private String startDijkstra(){
         boolean ret = findNextNode(this.startLat,this.startLng,this.endLat,this.endLng);
         if(ret == false){
             System.out.println("Error finding node next to start or endpoint...");
-            return;
+            return "";
         }
         else{
             System.out.println("Found next nodes...");
@@ -108,7 +111,7 @@ class Dijkstra implements HttpHandler {
 
             previousNode[n.ID] = n.previous;
             
-            System.out.println("Current Loc: " + graph.getNodeLat(n.ID)+","+graph.getNodeLng(n.ID));
+            //System.out.println("Current Loc: " + graph.getNodeLat(n.ID)+","+graph.getNodeLng(n.ID));
 
 			if (n.ID == endNode) {
 				break;
@@ -154,7 +157,7 @@ class Dijkstra implements HttpHandler {
 		}
 		System.out.println("Done with dijkstra");
 
-
+        return generateGeoJson(result);
     }
 
     private boolean findNextNode(Double startLat, Double startLng, Double endLat, Double endLng){
@@ -230,7 +233,7 @@ class Dijkstra implements HttpHandler {
         dist = 10000000;
         Integer endnodeindex = -1;
         for(int i = key2 ; i < key2end; i ++){
-            distbuff = calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), endLat, endLat); 
+            distbuff = calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), endLat, endLng); 
             if(distbuff < dist){
                 endnodeindex = i;
                 dist = distbuff;
@@ -272,10 +275,41 @@ class Dijkstra implements HttpHandler {
         return dist;
     }
 
+    private String generateGeoJson(ArrayList<Integer> routenodes){
+        String geojson = "";
 
+        String prestring = "";
+        String poststring = "";
+        String data = "";
+        String position ="";
+
+        prestring = "{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\",\"properties\": {},\"geometry\": {\"type\": \"LineString\",\"coordinates\": [";
+
+        poststring = "]}}]}";
+
+        for(int i = 0; i < routenodes.size(); i++){
+            position = "[";
+            position = position + graph.getNodeLng(routenodes.get(i)).toString();
+            position = position + ",";
+            position = position + graph.getNodeLat(routenodes.get(i)).toString();
+            data = data + position + "]";
+            if(i < routenodes.size()-1){
+                data = data + ",";
+            }
+        }
+
+        geojson = prestring + data + poststring;
+
+        return geojson;
+    
+    }
 
 }
 
 
+
+
+
 // TestURL: http://localhost:3000/dijkstra/8.802853,53.077668,8.795796,53.082291
 // TestURL2: http://localhost:3000/dijkstra/8.81027,53.06907,8.80797,53.06907
+
