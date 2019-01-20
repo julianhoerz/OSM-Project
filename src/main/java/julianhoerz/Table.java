@@ -52,6 +52,6 @@ class Table implements HttpHandler {
         }
         String responseJson = "{\"Nodes\":\"" + NodesLength.toString() + "\", \"Edges\":\"" + EdgesLength.toString() + "\"" + buff + "}";
 
-        return responseJson = "halloooooo";
+        return responseJson;
     }
 }

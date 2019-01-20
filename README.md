@@ -1,41 +1,51 @@
 # OSM-Project
 
-<!-- sudo apt-get update
-sudo apt-get upgrade
+Getestet mit Ubuntu 18 VM 15,7GB RAM
 
-sudo apt-get install git
-sudo apt-get install nodejs 
-sudo apt-get install npm 
-sudo apt-get install default-jdk
-sudo apt-get install maven
+Installation:
 
-mkdir osm
-cd osm
+    sudo apt-get update
+    sudo apt-get upgrade
 
-Terminal 1:
+    sudo apt-get install git
+    sudo apt-get install nodejs 
+    sudo apt-get install npm 
+    sudo apt-get install default-jdk
+    sudo apt-get install maven
 
-git clone https://github.com/julianhoerz/angulartest.git
-cd angulartest
-npm install
-npm start
-
-Firefox: http://localhost:4200
+    mkdir osm
 
 
 
-
-Terminal 2: 
-
-git clone https://github.com/julianhoerz/OSM-Project.git
-cd OSM-Project
-mvn verify
-java -cp target/graph-0.1.jar julianhoerz.App stuttgart.bin 
-mvn compile
-set MAVEN_OPTS=-Xmx14G
-mvn exec:java -Dexec.mainClass="julianhoerz.App" -Dexec.args="stuttgart.pbf"
+Neues Terminal öffnen (Terminal 1):
+    cd osm
+    git clone https://github.com/julianhoerz/OSM-Project.git
+    cd OSM-Project
+    mvn compile
+    set MAVEN_OPTS=-Xmx14G
+    mvn exec:java -Dexec.mainClass="julianhoerz.App" -Dexec.args="stuttgart.pbf"
 
 
--->
+Neues Terminal öffnen (Terminal 2):
+    cd osm
+    git clone https://github.com/julianhoerz/angulartest.git
+    cd angulartest
+    npm install
+    npm start
+
+
+Visualisierung:
+Öffne Firefox: http://localhost:4200
+Klick auf "Navigation"
+Klick auf "
+
+
+
+
+
+
+
+
 
 
 
