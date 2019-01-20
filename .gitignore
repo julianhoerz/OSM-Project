@@ -12,6 +12,7 @@ buildNumber.properties
 .mvn/timing.properties
 stuttgart.pbf
 germany.pbf
+germany.bin
 
 
 #

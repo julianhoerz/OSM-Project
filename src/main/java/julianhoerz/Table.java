@@ -40,12 +40,18 @@ class Table implements HttpHandler {
 
 
     private String createResponse(){
-        String name = "bremen";
+        String q = "\"";
         Integer NodesLength = graph.getNodesLength();
         Integer EdgesLength = graph.getEdgesLength();
+        Integer[] HighwayTags = graph.getHighwayTags();
+        String[] HighwayTagsName = graph.getHighwayTagsName();
+        String buff = "";
 
-        String responseJson = "{\"Name\":\"" + name + "\", \"Nodes\":\"" + NodesLength.toString() + "\", \"Edges\":\"" + EdgesLength.toString() + "\"}";
+        for(int i = 0; i < HighwayTags.length; i ++){
+            buff = buff + "," + q + HighwayTagsName[i] + q + ":" +  q + HighwayTags[i] + q;
+        }
+        String responseJson = "{\"Nodes\":\"" + NodesLength.toString() + "\", \"Edges\":\"" + EdgesLength.toString() + "\"" + buff + "}";
 
-        return responseJson;
+        return responseJson = "halloooooo";
     }
 }

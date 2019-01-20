@@ -2,22 +2,12 @@
 package julianhoerz;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -31,36 +21,27 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
 
 public class PbfFileReader {
 
-    private static String[] HighwayTagsArray = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified","residential","	service","motorway_link",
+    private String[] HighwayTagsArray = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified","residential","	service","motorway_link",
                         "trunk_link", "primary_link", "secondary_link", "tertiary_link", "living_street"};
 
-    private static String[] OneWayTagsArray = {"motorway", "motorway_link"};
+    private Integer[] HighwayTagsArrayNum;
 
-    private static HashMap<Long, Integer> Nodes;
-    private static Double[][] Node_Coords;
-    private static Long[] Node_Id;
+    private String[] OneWayTagsArray = {"motorway", "motorway_link"};
 
-    private static Double Max_Lng;
-    private static Double Min_Lng;
-    private static Double Max_Lat;
-    private static Double Min_Lat;
+    
+    private Double[][] Node_Coords;
+    private Long[] Node_Id;
 
-    private static Integer idx;
+    private Double Max_Lng;
+    private Double Min_Lng;
+    private Double Max_Lat;
+    private Double Min_Lat;
 
-    private static ArrayList<Long[]> EdgesArrayList;
-    private static Long[][] EdgesArray;
-    private static HashMap<Integer,ArrayList<Long>> Frames;
+    private Integer idx;
 
-
-
-    private static Integer[][] Offset_Frames_Final;
-
-    private static Long[] Node_Id_Final;
-    private static Double[][] Node_Coords_Final;
-    private static Integer[] Offset_Edges_Final;
-
-    private static Integer[] Edges_Final;
-    private static Double[] Edges_Length_Final;
+    private ArrayList<Long[]> EdgesArrayList;
+    private Long[][] EdgesArray;
+    private HashMap<Integer,ArrayList<Long>> Frames;
 
     private Graph graph;
 
@@ -77,10 +58,16 @@ public class PbfFileReader {
 
         this.EdgesArrayList = new ArrayList<Long[]>();
         this.Frames = new HashMap<Integer, ArrayList<Long>>();
-        this.Nodes = new HashMap<Long, Integer>();
+        // this.Nodes = new HashMap<Long, Integer>();
 
         /** Set the graph for storing the data */
         this.graph = graph;
+
+        this.HighwayTagsArrayNum = new Integer[this.HighwayTagsArray.length];
+
+        for(int i = 0; i < HighwayTagsArrayNum.length; i ++){
+            HighwayTagsArrayNum[i] = 0;
+        }
 
     }
 
@@ -88,17 +75,23 @@ public class PbfFileReader {
 
     
     public void buildGraph(String filename) throws IOException {
+
+        HashMap<Long, Integer> Nodes = new HashMap<Long, Integer>();
+        Date date = new Date();
+        boolean first[] = {true,true,true};
+
         InputStream input = new BufferedInputStream(new FileInputStream(filename));
         PbfIterator iterator = new PbfIterator(input, true);
 
         System.out.println("Scan 1 of 2 in progress...");
+        System.out.println("Startime: " + date.toString());
 
         for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Way){
                 OsmWay way = (OsmWay) container.getEntity();
                 if(checkStreet(way)){
                     for(int i = 0; i < way.getNumberOfNodes(); i ++){
-                       // Nodes.put(way.getNodeId(i),-1);
+                       Nodes.put(way.getNodeId(i),-1);
                     }
                 }
             }
@@ -107,6 +100,7 @@ public class PbfFileReader {
         input.close();
         iterator = null;
         input = null;
+        System.gc();
 
         Node_Coords = new Double[Nodes.size()][2];
         Node_Id = new Long[Nodes.size()];
@@ -115,11 +109,24 @@ public class PbfFileReader {
 
         InputStream input2 = new BufferedInputStream(new FileInputStream(filename));
         PbfIterator iterator2 = new PbfIterator(input2, true);
+        ArrayList<Long> buffer;
+        
+        OsmWay way;
+        OsmNode node;
+        String keylat;
+        String keylng;
+        int i;
+        Integer key;
 
         for (EntityContainer container : iterator2) {
 
             if(container.getType() == EntityType.Node){
-                OsmNode node = (OsmNode) container.getEntity();
+                if(first[0]){
+                    date = new Date();
+                    System.out.println("Startnode: " + date.toString());
+                    first[0] = false;
+                }
+                node = (OsmNode) container.getEntity();
                 if(Nodes.get(node.getId()) != null){
 
                     /** Set new index for this node */
@@ -130,15 +137,14 @@ public class PbfFileReader {
 
                     Node_Id[idx] = node.getId();
 
-                    String keylat = "" + ((int) Math.floor(node.getLatitude() * 10));
-                    String keylng = "" + ((int) Math.floor(node.getLongitude() * 10));
+                    keylat = "" + ((int) Math.floor(node.getLatitude() * 10));
+                    keylng = "" + ((int) Math.floor(node.getLongitude() * 10));
                     while (keylat.length() < 4) {keylat = "0" + keylat;}
                     while (keylng.length() < 4) {keylng = "0" + keylng;}
 
-                    Integer key = Integer.parseInt("" + keylat + keylng);
+                    key = Integer.parseInt("" + keylat + keylng);
 
-
-                    ArrayList<Long> buffer;
+                                     
                     if(Frames.get(key)!=null){
                         buffer = Frames.get(key);
                     }
@@ -165,16 +171,25 @@ public class PbfFileReader {
             }
 
             if (container.getType() == EntityType.Way){
-                OsmWay way = (OsmWay) container.getEntity();
+                if(first[1]){
+                    date = new Date();
+                    System.out.println("Startway: " + date.toString());
+                    first[1] = false;
+                }
+                way = (OsmWay) container.getEntity();
                 if(checkStreet(way)){
-                    for(int i = 0; i < way.getNumberOfNodes()-1; i++){
+                    for(i = 0; i < way.getNumberOfNodes()-1; i++){
                         if(isTwoWay(way) != -1){
-                            Long[] buff1 = {way.getNodeId(i), way.getNodeId(i+1)};
-                            EdgesArrayList.add(buff1);
+                            Long[] edgebuff = new Long[2];
+                            edgebuff[0] = way.getNodeId(i);
+                            edgebuff[1] = way.getNodeId(i+1);
+                            EdgesArrayList.add(edgebuff);
                         }
                         if(isTwoWay(way) != 0){
-                            Long[] buff2 = {way.getNodeId(i+1), way.getNodeId(i)};
-                            EdgesArrayList.add(buff2);
+                            Long[] edgebuff = new Long[2];
+                            edgebuff[0] = way.getNodeId(i+1);
+                            edgebuff[1] = way.getNodeId(i);
+                            EdgesArrayList.add(edgebuff);
                         }
                     }
                 }
@@ -186,6 +201,8 @@ public class PbfFileReader {
 
     
         System.out.println("Postprocessing in progress...");
+        date = new Date();
+        System.out.println("Start Postprocessing: " + date.toString());
 
         idx = 0;
 
@@ -196,13 +213,10 @@ public class PbfFileReader {
         graph.initEdges(EdgesArrayList.size());
         int EdgesLength = EdgesArrayList.size();
 
-       // Offset_Frames_Final = new Integer[Frames.size()][2];
+        graph.setHighwayTags(this.HighwayTagsArrayNum);
+        graph.setHighwayTagsName(this.HighwayTagsArray);
 
-        //Node_Id_Final = new Long[Nodes.size()];
-        //Node_Coords_Final = new Double[Nodes.size()][2];
-        // Offset_Edges_Final = new Integer[Nodes.size()];
-        
-        // Edges_Final = new Integer[EdgesArrayList.size()];
+
 
         Integer[] sortFrames = new Integer[Frames.size()];
 
@@ -215,22 +229,26 @@ public class PbfFileReader {
 
         idx = 0;
 
-        for(int i = 0 ; i < Frames.size(); i ++){
+        for(i = 0 ; i < Frames.size(); i ++){
             graph.setOffsetFrames(i, sortFrames[i], idx);
             for(Long node_id : Frames.get(sortFrames[i])){
                 graph.setNodeId(idx, node_id);
                 Integer index = Nodes.get(node_id);
                 Double lat = Node_Coords[index][0];
                 Double lng = Node_Coords[index][1];
+                Node_Coords[index][0] = null;
+                Node_Coords[index][1] = null;
                 graph.setNodeCoords(idx, lat, lng);
                 Nodes.put(node_id, idx);
                 idx ++;
             }
         }
 
+        Frames.clear();
         Frames = null;
         Node_Id = null;
         Node_Coords = null;
+        System.gc();
 
         for(Long[] edge : EdgesArrayList){
             edge[0] = (long) Nodes.get(edge[0]);
@@ -238,11 +256,12 @@ public class PbfFileReader {
         }
 
         
-
+        Nodes.clear();
         Nodes = null;
         System.gc();
 
         EdgesArray = EdgesArrayList.toArray(new Long[EdgesArrayList.size()][2]);
+        EdgesArrayList.clear();
         EdgesArrayList = null;
 
         Arrays.sort(EdgesArray, new java.util.Comparator<Long[]>() {
@@ -253,7 +272,7 @@ public class PbfFileReader {
 
         idx = 0;
         
-        for(Integer i = 0; i < NodesLength; i ++){
+        for(i = 0; i < NodesLength; i ++){
             graph.setOffsetEdges(i, idx);
             // Offset_Edges_Final[i] = idx;
             while(idx < EdgesArray.length && EdgesArray[idx][0] == (long) i){
@@ -269,14 +288,17 @@ public class PbfFileReader {
         calculateEdgeLength(EdgesLength);
 
         EdgesArray = null;
+        System.gc();
 
 
         System.out.println("Number of Frames: " + FramesLength);
         System.out.println("Number of Nodes: " + NodesLength);
         System.out.println("Number of Edges: " + EdgesLength);
 
-        System.out.println("Pbf File Reader finished.");
+        date = new Date();
+        System.out.println("Endtime: " + date.toString());
 
+        System.out.println("Pbf File Reader finished.");
 
         
     }
@@ -286,6 +308,12 @@ public class PbfFileReader {
         for(int i = 0; i < way.getNumberOfTags(); i ++){
             OsmTag tag = way.getTag(i);
             if(tag.getKey().equals("highway")){
+                for(int p = 0; p < HighwayTagsArray.length; p ++){
+                    if(HighwayTagsArray[p].equals(tag.getValue())){
+                        HighwayTagsArrayNum[p] ++;
+                        return true;
+                    }
+                }
                 boolean ret = Arrays.stream(HighwayTagsArray).anyMatch(tag.getValue()::equals);
                 return ret;
             }

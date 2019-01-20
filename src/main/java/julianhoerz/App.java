@@ -2,13 +2,6 @@ package julianhoerz;
 
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-
-
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 
 
 /**
@@ -50,7 +43,8 @@ public final class App {
         if(parts[1].equals("pbf")){
             PbfFileReader reader = new PbfFileReader(graph);
             reader.buildGraph(filename);
-
+            reader = null;
+            System.gc();
             // Check for save file
             if(args.length == 3){
                 if(args[1].equals("-save")){

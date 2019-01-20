@@ -3,27 +3,42 @@
 
 package julianhoerz;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-
 public class Graph {
 
-    private static Integer[][] Offset_Frames_Final;
+    private Integer[][] Offset_Frames_Final;
 
-    private static Long[] Node_Id_Final;
-    private static Double[][] Node_Coords_Final;
-    private static Integer[] Offset_Edges_Final;
+    private Long[] Node_Id_Final;
+    private Double[][] Node_Coords_Final;
+    private Integer[] Offset_Edges_Final;
 
-    private static Integer[] Edges_Final;
-    private static Double[] Edges_Length_Final;
+    private Integer[] Edges_Final;
+    private Double[] Edges_Length_Final;
+    private Integer[] HighwayTagsArrayNum;
+    private String[] HighwayTagsName;
 
     public Graph(){
 
     }
+
+
+    /** HighwayTagsArrayNumber */
+    public void setHighwayTags(Integer[] array){
+        this.HighwayTagsArrayNum = array;
+    }
+
+    public void setHighwayTagsName(String[] array){
+        this.HighwayTagsName = array;
+    }
+
+    public Integer[] getHighwayTags(){
+        return this.HighwayTagsArrayNum;
+    }
+
+    public String[] getHighwayTagsName(){
+        return this.HighwayTagsName;
+    }
+
+
 
     /** Offset Frames */
 
