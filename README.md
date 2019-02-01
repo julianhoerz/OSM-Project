@@ -74,7 +74,6 @@ Beim Deutschlandgraph kann die Berechnung bis zu 15 Sekunden dauern (wenn der Pf
 
 Bei Fragen: 
 julianhoerz@gmail.com
-015789242904
 
 
 
