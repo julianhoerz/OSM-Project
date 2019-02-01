@@ -13,6 +13,8 @@ buildNumber.properties
 stuttgart.pbf
 germany.pbf
 germany.bin
+*.bin
+*.pbf
 
 
 #

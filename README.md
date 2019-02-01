@@ -1,4 +1,4 @@
-# OSM-Project
+# OSM-Server
 
 Getestet mit Ubuntu 18 VM 15,7GB RAM
 Im Folgenden sind alle Befehle eingerückt. 
