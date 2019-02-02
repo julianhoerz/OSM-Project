@@ -21,8 +21,8 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
 
 public class PbfFileReader {
 
-    private String[] HighwayTagsArray = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified","residential","	service","motorway_link",
-                        "trunk_link", "primary_link", "secondary_link", "tertiary_link", "living_street"};
+    private String[] HighwayTagsArray = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified","residential","service","motorway_link",
+                        "trunk_link", "primary_link", "secondary_link", "tertiary_link", "living_street", "rest_area", "services","motorway_junction"};
 
     private Integer[] HighwayTagsArrayNum;
 
@@ -92,10 +92,14 @@ public class PbfFileReader {
                 if(checkStreet(way)){
                     for(int i = 0; i < way.getNumberOfNodes(); i ++){
                        Nodes.put(way.getNodeId(i),-1);
+                    //    if(way.getNodeId(i) == 32893218L){
+                    //        System.out.println("Streettag of 3177348999: " + way);
+                    //    }
                     }
                 }
             }
         }
+        //32893218
 
         input.close();
         iterator = null;
@@ -249,6 +253,7 @@ public class PbfFileReader {
         Node_Id = null;
         Node_Coords = null;
         System.gc();
+        System.runFinalization();
 
         for(Long[] edge : EdgesArrayList){
             edge[0] = (long) Nodes.get(edge[0]);
@@ -259,6 +264,7 @@ public class PbfFileReader {
         Nodes.clear();
         Nodes = null;
         System.gc();
+        System.runFinalization();
 
         EdgesArray = EdgesArrayList.toArray(new Long[EdgesArrayList.size()][2]);
         EdgesArrayList.clear();
@@ -350,24 +356,37 @@ public class PbfFileReader {
 
     private void calculateEdgeLength(int EdgesLength){
 
-        
+        double maxdist = 0;
+        double lat1;
+        double lng1;
+        double lat2;
+        double lng2;
+        double dist;
+        double lngstart = 0.0;
+        double latstart = 0.0;
+        double lngend = 0.0;
+        double latend = 0.0;
 
         for(int i = 0; i < EdgesLength; i ++){
-            // double lat1 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][0])][0];
-            // double lng1 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][0])][1];
-            // double lat2 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][1])][0];
-            // double lng2 = Node_Coords_Final[Math.toIntExact(EdgesArray[i][1])][1];
 
-            double lat1 = graph.getNodeLat(Math.toIntExact(EdgesArray[i][0]));
-            double lng1 = graph.getNodeLng(Math.toIntExact(EdgesArray[i][0]));
-            double lat2 = graph.getNodeLat(Math.toIntExact(EdgesArray[i][1]));
-            double lng2 = graph.getNodeLng(Math.toIntExact(EdgesArray[i][1]));
-            double dist = calculateDistance(lat1, lng1, lat2, lng2);
+
+            lat1 = graph.getNodeLat(Math.toIntExact(EdgesArray[i][0]));
+            lng1 = graph.getNodeLng(Math.toIntExact(EdgesArray[i][0]));
+            lat2 = graph.getNodeLat(Math.toIntExact(EdgesArray[i][1]));
+            lng2 = graph.getNodeLng(Math.toIntExact(EdgesArray[i][1]));
+            dist = calculateDistance(lat1, lng1, lat2, lng2);
+
+            if(dist > maxdist){
+                maxdist = dist;
+                latstart = lat1;
+                lngstart = lng1;
+                latend = lat2;
+                lngend = lng2;
+            }
 
             graph.setEdgesLength(i, dist);
-            // Edges_Length_Final[i] = dist;
         }
-
+        System.out.println("Maxdist: " + maxdist + " Start: " + latstart + "," + lngstart + " End: " + latend + "," + lngend);
     }
 
     private double calculateDistance(double lat1, double lng1, double lat2, double lng2){

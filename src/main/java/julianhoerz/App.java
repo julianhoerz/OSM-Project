@@ -70,6 +70,10 @@ public final class App {
         server.start();
 
 
+        System.gc();
+        System.runFinalization();
+
+
     }
 
 

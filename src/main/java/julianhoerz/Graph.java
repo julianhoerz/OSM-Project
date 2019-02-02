@@ -97,6 +97,9 @@ public class Graph {
     }
 
     public Integer getNodeOffset(int index){
+        if(index >= Offset_Edges_Final.length){
+            return Edges_Final.length;
+        }
         return Offset_Edges_Final[index];
     }
 
