@@ -95,8 +95,16 @@ class Dijkstra implements HttpHandler {
             System.out.println("Error occured while finding startnode...");
             return "";
         }
-        this.startNode = ret.getN1ID();
-        int secondnodestart = ret.getN2ID();
+        NodeProj startProj = new NodeProj(ret);
+        // this.startNode = ret.getN1ID();
+        // int secondnodestart;
+        // if(ret.getProjectedCoords()[0] == -1.0){
+        //     secondnodestart = -1;
+        // }
+        // else{
+        //     secondnodestart = ret.getN2ID();
+        // }
+        
 
         System.out.println("Endnode: ");
         ret = findNextStreet(this.endLat, this.endLng);
@@ -104,8 +112,17 @@ class Dijkstra implements HttpHandler {
             System.out.println("Error occured while finding endnode...");
             return "";
         }
-        this.endNode = ret.getN1ID();
-        int secondnodeend = ret.getN2ID();
+        NodeProj endProj = new NodeProj(ret);
+        this.endNode = endProj.getN1ID();
+        // this.endNode = ret.getN1ID();
+        // int secondnodeend;
+        // if(ret.getProjectedCoords()[0] == -1.0){
+        //     secondnodeend = -1;
+        // }
+        // else{
+        //     secondnodeend = ret.getN2ID();
+        // }
+        
 
 
 
@@ -124,10 +141,20 @@ class Dijkstra implements HttpHandler {
             previousNode[i] = -1;
         }
         
-        Node n = new Node(0.0, startNode, -1);
+        Node n;
 
-        front.add(n);
-        // front.add(new Node(0.0, secondnodestart,-1));
+        if(startProj.getProjectedCoords()[0] == -1){
+            n = new Node(0.0, startProj.getN1ID(), -1);
+            front.add(n);
+        }
+        else{
+            double dist1 = calculateDistance(startProj.getN1Coords()[0], startProj.getN1Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
+            double dist2 = calculateDistance(startProj.getN2Coords()[0], startProj.getN2Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
+            Node n1 = new Node(dist1, startProj.getN1ID(), -1);
+            Node n2 = new Node(dist2, startProj.getN2ID(), -1);
+            front.add(n1);
+            front.add(n2);
+        }
 
         
 
@@ -178,7 +205,7 @@ class Dijkstra implements HttpHandler {
 		}
 		System.out.println("Done with dijkstra");
 
-        return generateGeoJson(result);
+        return generateGeoJson(result, startProj);
     }
 
 
@@ -360,7 +387,6 @@ class Dijkstra implements HttpHandler {
                     this.offsetCoords[1] = coords[1];
                     this.secondnode = this.nodebuff;
                 }
-
             }
         }
 
@@ -461,7 +487,7 @@ class Dijkstra implements HttpHandler {
         return dist;
     }
 
-    private String generateGeoJson(ArrayList<Integer> routenodes){
+    private String generateGeoJson(ArrayList<Integer> routenodes, NodeProj startProj){
         String geojson = "";
 
         String prestring = "";
@@ -472,6 +498,10 @@ class Dijkstra implements HttpHandler {
         prestring = "{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\",\"properties\": {},\"geometry\": {\"type\": \"LineString\",\"coordinates\": [";
 
         poststring = "]}}]}";
+
+        if(startProj.getProjectedCoords()[0] != -1){
+            data = "[" + startProj.getProjectedCoords()[1] + "," + startProj.getProjectedCoords()[0] + "],";
+        }
 
         for(int i = 0; i < routenodes.size(); i++){
             position = "[";
