@@ -24,23 +24,24 @@ public class PbfFileReader {
     private String[] HighwayTagsArray = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified","residential","service","motorway_link",
                         "trunk_link", "primary_link", "secondary_link", "tertiary_link", "living_street", "rest_area", "services","motorway_junction"};
 
-    private Integer[] HighwayTagsArrayNum;
+    private int[] HighwayTagsArrayNum;
 
     private String[] OneWayTagsArray = {"motorway", "motorway_link"};
 
+    private HashMap<Long, Integer> Nodes;
     
-    private Double[][] Node_Coords;
-    private Long[] Node_Id;
+    private double[][] Node_Coords;
+    private long[] Node_Id;
 
-    private Double Max_Lng;
-    private Double Min_Lng;
-    private Double Max_Lat;
-    private Double Min_Lat;
+    private double Max_Lng;
+    private double Min_Lng;
+    private double Max_Lat;
+    private double Min_Lat;
 
-    private Integer idx;
+    private int idx;
 
-    private ArrayList<Long[]> EdgesArrayList;
-    private Long[][] EdgesArray;
+    private ArrayList<long[]> EdgesArrayList;
+    private long[][] EdgesArray;
     private HashMap<Integer,ArrayList<Long>> Frames;
 
     private Graph graph;
@@ -56,14 +57,14 @@ public class PbfFileReader {
 
         this.idx = 0;
 
-        this.EdgesArrayList = new ArrayList<Long[]>();
+        this.EdgesArrayList = new ArrayList<long[]>();
         this.Frames = new HashMap<Integer, ArrayList<Long>>();
-        // this.Nodes = new HashMap<Long, Integer>();
+        this.Nodes = new HashMap<Long, Integer>();
 
         /** Set the graph for storing the data */
         this.graph = graph;
 
-        this.HighwayTagsArrayNum = new Integer[this.HighwayTagsArray.length];
+        this.HighwayTagsArrayNum = new int[this.HighwayTagsArray.length];
 
         for(int i = 0; i < HighwayTagsArrayNum.length; i ++){
             HighwayTagsArrayNum[i] = 0;
@@ -76,7 +77,7 @@ public class PbfFileReader {
     
     public void buildGraph(String filename) throws IOException {
 
-        HashMap<Long, Integer> Nodes = new HashMap<Long, Integer>();
+        
         Date date = new Date();
         boolean first[] = {true,true,true};
 
@@ -91,7 +92,7 @@ public class PbfFileReader {
                 OsmWay way = (OsmWay) container.getEntity();
                 if(checkStreet(way)){
                     for(int i = 0; i < way.getNumberOfNodes(); i ++){
-                       Nodes.put(way.getNodeId(i),-1);
+                       Nodes.put(way.getNodeId(i),new Integer(-1));
                     //    if(way.getNodeId(i) == 32893218L){
                     //        System.out.println("Streettag of 3177348999: " + way);
                     //    }
@@ -99,15 +100,14 @@ public class PbfFileReader {
                 }
             }
         }
-        //32893218
 
         input.close();
         iterator = null;
         input = null;
         System.gc();
 
-        Node_Coords = new Double[Nodes.size()][2];
-        Node_Id = new Long[Nodes.size()];
+        Node_Coords = new double[Nodes.size()][2];
+        Node_Id = new long[Nodes.size()];
 
         System.out.println("Scan 2 of 2 in progress...");
 
@@ -184,13 +184,13 @@ public class PbfFileReader {
                 if(checkStreet(way)){
                     for(i = 0; i < way.getNumberOfNodes()-1; i++){
                         if(isTwoWay(way) != -1){
-                            Long[] edgebuff = new Long[2];
+                            long[] edgebuff = new long[2];
                             edgebuff[0] = way.getNodeId(i);
                             edgebuff[1] = way.getNodeId(i+1);
                             EdgesArrayList.add(edgebuff);
                         }
                         if(isTwoWay(way) != 0){
-                            Long[] edgebuff = new Long[2];
+                            long[] edgebuff = new long[2];
                             edgebuff[0] = way.getNodeId(i+1);
                             edgebuff[1] = way.getNodeId(i);
                             EdgesArrayList.add(edgebuff);
@@ -222,9 +222,9 @@ public class PbfFileReader {
 
 
 
-        Integer[] sortFrames = new Integer[Frames.size()];
+        int[] sortFrames = new int[Frames.size()];
 
-        for(Integer frame_id : Frames.keySet()){
+        for(int frame_id : Frames.keySet()){
             sortFrames[idx] = frame_id;
             idx ++;
         }
@@ -235,14 +235,10 @@ public class PbfFileReader {
 
         for(i = 0 ; i < Frames.size(); i ++){
             graph.setOffsetFrames(i, sortFrames[i], idx);
-            for(Long node_id : Frames.get(sortFrames[i])){
+            for(long node_id : Frames.get(sortFrames[i])){
                 graph.setNodeId(idx, node_id);
-                Integer index = Nodes.get(node_id);
-                Double lat = Node_Coords[index][0];
-                Double lng = Node_Coords[index][1];
-                Node_Coords[index][0] = null;
-                Node_Coords[index][1] = null;
-                graph.setNodeCoords(idx, lat, lng);
+                int index = Nodes.get(node_id);
+                graph.setNodeCoords(idx, Node_Coords[index][0], Node_Coords[index][1]);
                 Nodes.put(node_id, idx);
                 idx ++;
             }
@@ -255,7 +251,7 @@ public class PbfFileReader {
         System.gc();
         System.runFinalization();
 
-        for(Long[] edge : EdgesArrayList){
+        for(long[] edge : EdgesArrayList){
             edge[0] = (long) Nodes.get(edge[0]);
             edge[1] = (long) Nodes.get(edge[1]);
         }
@@ -266,12 +262,12 @@ public class PbfFileReader {
         System.gc();
         System.runFinalization();
 
-        EdgesArray = EdgesArrayList.toArray(new Long[EdgesArrayList.size()][2]);
+        EdgesArray = EdgesArrayList.toArray(new long[EdgesArrayList.size()][2]);
         EdgesArrayList.clear();
         EdgesArrayList = null;
 
-        Arrays.sort(EdgesArray, new java.util.Comparator<Long[]>() {
-			public int compare(Long[] a, Long[] b) {
+        Arrays.sort(EdgesArray, new java.util.Comparator<long[]>() {
+			public int compare(long[] a, long[] b) {
 				return Long.compare(a[0], b[0]);
 			}
         });

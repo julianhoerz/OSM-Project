@@ -43,7 +43,7 @@ class Table implements HttpHandler {
         String q = "\"";
         Integer NodesLength = graph.getNodesLength();
         Integer EdgesLength = graph.getEdgesLength();
-        Integer[] HighwayTags = graph.getHighwayTags();
+        int[] HighwayTags = graph.getHighwayTags();
         String[] HighwayTagsName = graph.getHighwayTagsName();
         String buff = "";
 

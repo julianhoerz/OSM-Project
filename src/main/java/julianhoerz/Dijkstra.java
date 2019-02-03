@@ -17,21 +17,21 @@ import com.sun.net.httpserver.HttpServer;
 
 class Dijkstra implements HttpHandler {
 
-    Double startLat;
-    Double startLng;
-    Double endLat;
-    Double endLng;
+    double startLat;
+    double startLng;
+    double endLat;
+    double endLng;
 
-    Integer startNode;
-    Integer endNode;
+    int startNode;
+    int endNode;
 
-    Double[] offsetCoords;
+    double[] offsetCoords;
 
     Graph graph;
 
     Dijkstra(Graph graph){
         this.graph = graph;
-        this.offsetCoords = new Double[2];
+        this.offsetCoords = new double[2];
     }
 
     @Override
@@ -84,16 +84,30 @@ class Dijkstra implements HttpHandler {
 
 
     private String startDijkstra(){
-        boolean ret = findNextNode(this.startLat,this.startLng,this.endLat,this.endLng);
+        // boolean ret = findNextNode(this.startLat,this.startLng,this.endLat,this.endLng);
+        int ret;
+
         ret = findNextStreet(this.startLat,this.startLng);
-        if(ret == false){
-            System.out.println("Error finding node next to start or endpoint...");
+        if(ret == -1){
+            System.out.println("Error occured while finding startnode...");
             return "";
         }
-        else{
-            System.out.println("Found next nodes...");
-        }
+        this.startNode = ret;
 
+
+        ret = findNextStreet(this.endLat, this.endLng);
+        if(ret == -1){
+            System.out.println("Error occured while finding endnode...");
+            return "";
+        }
+        this.endNode = ret;
+
+        System.out.println("Startnode Coords: " + graph.getNodeLat(this.startNode) + ", " + graph.getNodeLng(this.startNode));
+        System.out.println("Startnode ID: " + graph.getNodeId(this.startNode));
+        System.out.println("Endnode Coords: " + graph.getNodeLat(this.endNode) + ", " + graph.getNodeLng(this.endNode));
+        System.out.println("Endnode ID: " + graph.getNodeId(this.endNode));
+
+        System.out.println("Found next nodes...");
         System.out.println("Start Dijkstra...");
 
 		PriorityQueue<Node> front = new PriorityQueue<Node>();
@@ -166,14 +180,14 @@ class Dijkstra implements HttpHandler {
     }
 
 
-    private Integer[][] findFrames(Double lat, Double lng){
+    private int[][] findFrames(double lat, double lng){
 
-        Integer[][] keys = {{0, 0}, {0, 0}, {0, 0}, 
+        int[][] keys = {{0, 0}, {0, 0}, {0, 0}, 
                             {0, 0}, {0, 0}, {0, 0},
                             {0, 0}, {0, 0}, {0, 0}};
 
-        Integer latint = (int) Math.floor(lat * 10);
-        Integer lngint = (int) Math.floor(lng * 10);
+        int latint = (int) Math.floor(lat * 10);
+        int lngint = (int) Math.floor(lng * 10);
 
         String keylat;
         String keylng;
@@ -189,12 +203,12 @@ class Dijkstra implements HttpHandler {
             }
         }
         boolean found = false;
-        Integer currentKey;
+        int currentKey;
         for(int i = 0; i < graph.getFramesLength(); i ++){
             currentKey = graph.getOffsetFrames(i, 0);
 
             for(int p = 0; p < 9; p++){
-                if(currentKey.equals(keys[p][0])){
+                if(currentKey == keys[p][0]){
                     found = true;
                     keys[p][0] = graph.getOffsetFrames(i, 1);
                     if(i == graph.getFramesLength()-1){
@@ -213,8 +227,8 @@ class Dijkstra implements HttpHandler {
     }
 
 
-    private Double[] projection(int node1, int node2, double lat, double lng){
-        Double[] coords = new Double[2];
+    private double[] projection(int node1, int node2, double lat, double lng){
+        double[] coords = new double[2];
 
         double node1lat = graph.getNodeLat(node1);
         double node1lng = graph.getNodeLng(node1);
@@ -256,16 +270,16 @@ class Dijkstra implements HttpHandler {
     }
 
 
-    private Double[] calculateOrthogonalPoint(int nodeid, double lat, double lng){
-        Double[] coords = {-1.0, 0.0};
+    private double[] calculateOrthogonalPoint(int nodeid, double lat, double lng){
+        double[] coords = {-1.0, 0.0};
 
         double dist;
         dist = calculateDistance(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid), lat, lng); 
 
-        Integer[] successorId;
-        Integer startindex = graph.getNodeOffset(nodeid);
-        Integer endindex = graph.getNodeOffset(nodeid + 1);
-        successorId = new Integer[endindex-startindex];
+        int[] successorId;
+        int startindex = graph.getNodeOffset(nodeid);
+        int endindex = graph.getNodeOffset(nodeid + 1);
+        successorId = new int[endindex-startindex];
         if(successorId.length == 0){
             /** No successor e.g. at the pbf border or old ending onewaystreets -> Not a error */
             // System.out.println("No successor for this node...");
@@ -275,15 +289,11 @@ class Dijkstra implements HttpHandler {
             return coords;
         }
 
-        if(graph.getNodeId(nodeid).equals(25733873L)){
-            System.out.println("Debug");
-        }
-        
-        Double[] coordsbuff = new Double[2];
+        double[] coordsbuff = new double[2];
         double distbuff;
         for(int i = startindex; i < endindex; i ++){
             coordsbuff = projection(nodeid,graph.getEdges(i),lat,lng);
-            if(coordsbuff[0].equals(-1.0)){
+            if(coordsbuff[0] == -1.0){
                 continue;
             }
             distbuff = calculateDistance(coordsbuff[0], coordsbuff[1], lat, lng);
@@ -297,26 +307,26 @@ class Dijkstra implements HttpHandler {
         return coords;
     }
 
-    private boolean findNextStreet(Double lat, Double lng){
-        Double[] coords = new Double[2];
+    private int findNextStreet(double lat, double lng){
+        double[] coords = new double[2];
 
-        Integer[][] keys = findFrames(lat, lng);
+        int[][] keys = findFrames(lat, lng);
         if(keys[0][0] == -1){
             System.out.println("No Frame found in this map");
             System.out.println("ERROR: No route found...");
-            return false;
+            return -1;
         }
 
 
         double dist = Double.POSITIVE_INFINITY;
         double distbuff = 0;
-        Integer startnodeindex = -1;
+        int startnodeindex = -1;
         for(int p = 1; p < 9 ; p ++){
 
             for(int nodeid = keys[p][0] ; nodeid < keys[p][1]; nodeid ++){
 
                 coords = calculateOrthogonalPoint(nodeid, lat,lng);
-                if(coords[0].equals(-1.0)){
+                if(coords[0] == -1.0){
                     coords[0] = graph.getNodeLat(nodeid);
                     coords[1] = graph.getNodeLng(nodeid);
                 }
@@ -330,12 +340,10 @@ class Dijkstra implements HttpHandler {
             }
         }
 
-        this.startNode = startnodeindex;
-
-        System.out.println("Startkante: " + this.offsetCoords[0] + "," +this.offsetCoords[1]);
+        System.out.println("Orthogonalpoint: " + this.offsetCoords[0] + "," +this.offsetCoords[1]);
 
 
-        return true;
+        return startnodeindex;
     }
 
 
@@ -344,8 +352,8 @@ class Dijkstra implements HttpHandler {
 
         /*Find Key in Frames*/
 
-        Integer[][] startKeys = findFrames(startLat, startLng);
-        Integer[][] endKeys = findFrames(endLat, endLng);
+        int[][] startKeys = findFrames(startLat, startLng);
+        int[][] endKeys = findFrames(endLat, endLng);
 
         if(startKeys[0][0] == -1 || endKeys[0][0] == -1){
             System.out.println("No Frame found in this map");
@@ -361,7 +369,7 @@ class Dijkstra implements HttpHandler {
 
         double dist = 10000000;
         double distbuff = 0;
-        Integer startnodeindex = -1;
+        int startnodeindex = -1;
         for(int p = 1; p < 9 ; p ++){
             for(int i = startKeys[p][0] ; i < startKeys[p][1]; i ++){
                 distbuff = calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), startLat, startLng); 
@@ -373,7 +381,7 @@ class Dijkstra implements HttpHandler {
         }
 
         dist = 10000000;
-        Integer endnodeindex = -1;
+        int endnodeindex = -1;
         for(int p = 1; p < 9 ; p ++){
             for(int i = endKeys[p][0] ; i < endKeys[p][1]; i ++){
                 distbuff = calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), endLat, endLng); 
@@ -435,9 +443,9 @@ class Dijkstra implements HttpHandler {
 
         for(int i = 0; i < routenodes.size(); i++){
             position = "[";
-            position = position + graph.getNodeLng(routenodes.get(i)).toString();
+            position = position + graph.getNodeLng(routenodes.get(i)) + "";
             position = position + ",";
-            position = position + graph.getNodeLat(routenodes.get(i)).toString();
+            position = position + graph.getNodeLat(routenodes.get(i)) + "";
             data = data + position + "]";
             if(i < routenodes.size()-1){
                 data = data + ",";
