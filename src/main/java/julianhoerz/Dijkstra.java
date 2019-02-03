@@ -26,6 +26,8 @@ class Dijkstra implements HttpHandler {
     int endNode;
 
     double[] offsetCoords;
+    int nodebuff;
+    int secondnode;
 
     Graph graph;
 
@@ -85,29 +87,32 @@ class Dijkstra implements HttpHandler {
 
     private String startDijkstra(){
         // boolean ret = findNextNode(this.startLat,this.startLng,this.endLat,this.endLng);
-        int ret;
+        NodeProj ret;
 
+        System.out.println("Startnode: ");
         ret = findNextStreet(this.startLat,this.startLng);
-        if(ret == -1){
+        if(ret.getN1ID() == -1){
             System.out.println("Error occured while finding startnode...");
             return "";
         }
-        this.startNode = ret;
+        this.startNode = ret.getN1ID();
+        int secondnodestart = ret.getN2ID();
 
-
+        System.out.println("Endnode: ");
         ret = findNextStreet(this.endLat, this.endLng);
-        if(ret == -1){
+        if(ret.getN1ID() == -1){
             System.out.println("Error occured while finding endnode...");
             return "";
         }
-        this.endNode = ret;
+        this.endNode = ret.getN1ID();
+        int secondnodeend = ret.getN2ID();
 
-        System.out.println("Startnode Coords: " + graph.getNodeLat(this.startNode) + ", " + graph.getNodeLng(this.startNode));
-        System.out.println("Startnode ID: " + graph.getNodeId(this.startNode));
-        System.out.println("Endnode Coords: " + graph.getNodeLat(this.endNode) + ", " + graph.getNodeLng(this.endNode));
-        System.out.println("Endnode ID: " + graph.getNodeId(this.endNode));
 
-        System.out.println("Found next nodes...");
+
+
+
+
+        
         System.out.println("Start Dijkstra...");
 
 		PriorityQueue<Node> front = new PriorityQueue<Node>();
@@ -115,14 +120,20 @@ class Dijkstra implements HttpHandler {
 		boolean[] visited = new boolean[graph.getNodesLength()];
 
         for (int i = 0; i < graph.getNodesLength(); i++) {
-			visited[i] = false;
+            visited[i] = false;
+            previousNode[i] = -1;
         }
         
-        front.add(new Node(0.0, startNode, -1));
+        Node n = new Node(0.0, startNode, -1);
+
+        front.add(n);
+        // front.add(new Node(0.0, secondnodestart,-1));
+
+        
 
         while (!front.isEmpty()) {
 
-			Node n = front.poll();
+			n = front.poll();
 
 			if (visited[n.ID]) {
 				continue;
@@ -130,22 +141,13 @@ class Dijkstra implements HttpHandler {
 			visited[n.ID] = true;
 
             previousNode[n.ID] = n.previous;
-            
-            //System.out.println("Current Loc: " + graph.getNodeLat(n.ID)+","+graph.getNodeLng(n.ID));
 
 			if (n.ID == endNode) {
 				break;
 			}
 
-			// System.out.println("current/min is node #" + n.ID);
-
-			//int idx = graph.getNodeOffset(n.ID);
 			int endFor = graph.getNodeOffset(n.ID + 1);
-			// if (idx == graph.getNodesLength()) {
-			// 	endFor = graph.getEdgesLength() - 1;
-			// } else {
-			// 	endFor = graph.getNodeOffset(n.ID+1);
-			// }
+
 
 			for (int i = graph.getNodeOffset(n.ID); i < endFor; i++) {
 				int neighbor = graph.getEdges(i);
@@ -227,13 +229,13 @@ class Dijkstra implements HttpHandler {
     }
 
 
-    private double[] projection(int node1, int node2, double lat, double lng){
+    private NodeProj projection(NodeProj proj){
         double[] coords = new double[2];
 
-        double node1lat = graph.getNodeLat(node1);
-        double node1lng = graph.getNodeLng(node1);
-        double node2lat = graph.getNodeLat(node2);
-        double node2lng = graph.getNodeLng(node2);
+        double node1lat = proj.getN1Coords()[0];
+        double node1lng = proj.getN1Coords()[1];
+        double node2lat = proj.getN2Coords()[0];
+        double node2lng = proj.getN2Coords()[1];
 
         /** Using Equirectangular projection: */
         double phi = node1lat;
@@ -249,14 +251,14 @@ class Dijkstra implements HttpHandler {
         direction[1] /= directionnorm;
 
         double[] vec = new double[2];
-        vec[0] = lat-phi;
-        vec[1] = (lng-lambda)*Math.cos(Math.toRadians(phi));
+        vec[0] = proj.getInitialCoords()[0]-phi;
+        vec[1] = (proj.getInitialCoords()[1]-lambda)*Math.cos(Math.toRadians(phi));
 
         double shift = direction[0] * vec[0] + direction[1] * vec[1];
 
         if(shift <= 0 || shift >= directionnorm){
-            coords[0] = -1.0;
-            return coords;
+            proj.setProjectedCoords(-1.0,-1.0);
+            return proj;
         }
 
         double[] coordsxy = new double[2];
@@ -266,66 +268,84 @@ class Dijkstra implements HttpHandler {
         coords[0] = coordsxy[0] + phi;
         coords[1] = coordsxy[1] / Math.cos(Math.toRadians(phi)) + lambda;
 
-        return coords;
+        proj.setProjectedCoords(coords[0], coords[1]);
+
+        return proj;
     }
 
 
-    private double[] calculateOrthogonalPoint(int nodeid, double lat, double lng){
-        double[] coords = {-1.0, 0.0};
-
+    private NodeProj calculateOrthogonalPoint(NodeProj projection){
+        double[] nodecoords = projection.getN1Coords();
         double dist;
-        dist = calculateDistance(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid), lat, lng); 
+        dist = calculateDistance(nodecoords[0], nodecoords[1], projection.getInitialCoords()[0], projection.getInitialCoords()[1]); 
 
         int[] successorId;
-        int startindex = graph.getNodeOffset(nodeid);
-        int endindex = graph.getNodeOffset(nodeid + 1);
+        int startindex = graph.getNodeOffset(projection.getN1ID());
+        int endindex = graph.getNodeOffset(projection.getN1ID() + 1);
         successorId = new int[endindex-startindex];
         if(successorId.length == 0){
-            /** No successor e.g. at the pbf border or old ending onewaystreets -> Not a error */
-            // System.out.println("No successor for this node...");
-            // System.out.println("ERROR...");
-            // System.out.println("Coords: " + graph.getNodeLat(nodeid) + "," + graph.getNodeLng(nodeid));
-            // System.out.println("OSM ID: " + graph.getNodeId(nodeid));
-            return coords;
+            projection.setProjectedCoords(-1.0,-1.0);
+            return projection;
         }
 
         double[] coordsbuff = new double[2];
         double distbuff;
+        NodeProj projbuff = new NodeProj(projection);
+        int nodeid;
         for(int i = startindex; i < endindex; i ++){
-            coordsbuff = projection(nodeid,graph.getEdges(i),lat,lng);
+            nodeid = graph.getEdges(i);
+            projbuff.setN2Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
+            projbuff.setN2ID(nodeid);
+
+            projbuff = projection(projbuff);
+
+            coordsbuff = projbuff.getProjectedCoords();
+
             if(coordsbuff[0] == -1.0){
                 continue;
             }
-            distbuff = calculateDistance(coordsbuff[0], coordsbuff[1], lat, lng);
+            distbuff = calculateDistance(coordsbuff[0], coordsbuff[1],projbuff.getInitialCoords()[0], projbuff.getInitialCoords()[1]);
             if(distbuff < dist){
                 dist = distbuff;
-                coords = coordsbuff;
+                projection.setN2Coords(projbuff.getN2Coords()[0], projbuff.getN2Coords()[1]);
+                projection.setN2ID(projbuff.getN2ID());
+                projection.setProjectedCoords(projbuff.getProjectedCoords()[0], projbuff.getProjectedCoords()[1]);
             }
         }
 
 
-        return coords;
+        return projection;
     }
 
-    private int findNextStreet(double lat, double lng){
+    private NodeProj findNextStreet(double lat, double lng){
         double[] coords = new double[2];
 
         int[][] keys = findFrames(lat, lng);
         if(keys[0][0] == -1){
             System.out.println("No Frame found in this map");
             System.out.println("ERROR: No route found...");
-            return -1;
+            return new NodeProj();
         }
 
 
         double dist = Double.POSITIVE_INFINITY;
         double distbuff = 0;
         int startnodeindex = -1;
+        NodeProj projectionfinal = new NodeProj();
+        NodeProj projection = new NodeProj();
+        projection.setInitialCoords(lat, lng);
         for(int p = 1; p < 9 ; p ++){
 
             for(int nodeid = keys[p][0] ; nodeid < keys[p][1]; nodeid ++){
 
-                coords = calculateOrthogonalPoint(nodeid, lat,lng);
+                projection.setN1Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
+                projection.setN1ID(nodeid);
+
+                projection = calculateOrthogonalPoint(projection);
+
+                coords[0] = projection.getProjectedCoords()[0];
+                coords[1] = projection.getProjectedCoords()[1];
+
                 if(coords[0] == -1.0){
                     coords[0] = graph.getNodeLat(nodeid);
                     coords[1] = graph.getNodeLng(nodeid);
@@ -334,16 +354,28 @@ class Dijkstra implements HttpHandler {
                 if(distbuff < dist){
                     startnodeindex = nodeid;
                     dist = distbuff;
-                    this.offsetCoords = coords;
+                    projectionfinal = new NodeProj(projection);
+
+                    this.offsetCoords[0] = coords[0];
+                    this.offsetCoords[1] = coords[1];
+                    this.secondnode = this.nodebuff;
                 }
 
             }
         }
 
-        System.out.println("Orthogonalpoint: " + this.offsetCoords[0] + "," +this.offsetCoords[1]);
 
+        if(projectionfinal.getProjectedCoords()[0] != -1.0){
+            System.out.println("Point not on node...");
+            System.out.println("Point is on " + projectionfinal.getProjectedCoords()[0] + "," +projectionfinal.getProjectedCoords()[1]);
+            System.out.println("Nextnode Coords: " + projectionfinal.getN1Coords()[0] + "," +  + projectionfinal.getN1Coords()[1]);
+        }
+        else{
+            System.out.println("Point on node...");
+            System.out.println("Node Coords: " + graph.getNodeLat(startnodeindex) + "," +  + graph.getNodeLng(startnodeindex));
+        }
 
-        return startnodeindex;
+        return projectionfinal;
     }
 
 
