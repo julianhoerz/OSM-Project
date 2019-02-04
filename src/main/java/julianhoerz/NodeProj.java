@@ -56,6 +56,7 @@ public class NodeProj{
     public void setInitialCoords(double initialLat, double initialLng){
         this.initialCoords[0] = initialLat;
         this.initialCoords[1] = initialLng;
+        this.setProjectedCoords(-1.0, -1.0);
     }
 
     public double[] getInitialCoords(){
@@ -74,6 +75,7 @@ public class NodeProj{
     public void setN1Coords(double n1Lat, double n1Lng){
         this.n1Coords[0] = n1Lat;
         this.n1Coords[1] = n1Lng;
+        this.setProjectedCoords(-1.0, -1.0);
     }
 
     public double[] getN1Coords(){
@@ -83,6 +85,7 @@ public class NodeProj{
     public void setN2Coords(double n2Lat, double n2Lng){
         this.n2Coords[0] = n2Lat;
         this.n2Coords[1] = n2Lng;
+        this.setProjectedCoords(-1.0, -1.0);
     }
 
     public double[] getN2Coords(){

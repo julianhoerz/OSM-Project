@@ -113,7 +113,7 @@ class Dijkstra implements HttpHandler {
             return "";
         }
         NodeProj endProj = new NodeProj(ret);
-        this.endNode = endProj.getN1ID();
+        
         // this.endNode = ret.getN1ID();
         // int secondnodeend;
         // if(ret.getProjectedCoords()[0] == -1.0){
@@ -142,6 +142,12 @@ class Dijkstra implements HttpHandler {
         }
         
         Node n;
+        this.endNode = endProj.getN1ID();
+        int endNode2 = this.endNode;
+        if(endProj.getProjectedCoords()[0] != -1){
+            endNode2 = endProj.getN2ID();
+        }
+
 
         if(startProj.getProjectedCoords()[0] == -1){
             n = new Node(0.0, startProj.getN1ID(), -1);
@@ -170,6 +176,10 @@ class Dijkstra implements HttpHandler {
             previousNode[n.ID] = n.previous;
 
 			if (n.ID == endNode) {
+				break;
+            }
+            if (n.ID == endNode2) {
+                endNode = endNode2;
 				break;
 			}
 
@@ -525,7 +535,7 @@ class Dijkstra implements HttpHandler {
 
 
 
-
+// Mapmatching
 // TestURL: http://localhost:3000/dijkstra/8.802853,53.077668,8.795796,53.082291
 // TestURL2: http://localhost:3000/dijkstra/8.81027,53.06907,8.80797,53.06907
 
