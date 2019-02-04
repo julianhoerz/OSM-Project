@@ -288,8 +288,18 @@ class Dijkstra implements HttpHandler {
     }
 
 
+    /**
+     * Provides an orthogonal projection of the initial coordinates of 
+     * proj onto the line node1-node2. If no orthogonal projection is 
+     * possible return with projection coordinates -1.
+     * 
+     */
     private NodeProj projection(NodeProj proj){
-        double[] coords = new double[2];
+
+        double shift;
+
+        double[] coordsxy = new double[2];
+        double[] vec = new double[2];
 
         double node1lat = proj.getN1Coords()[0];
         double node1lng = proj.getN1Coords()[1];
@@ -309,25 +319,22 @@ class Dijkstra implements HttpHandler {
         direction[0] /= directionnorm;
         direction[1] /= directionnorm;
 
-        double[] vec = new double[2];
         vec[0] = proj.getInitialCoords()[0]-phi;
         vec[1] = (proj.getInitialCoords()[1]-lambda)*Math.cos(Math.toRadians(phi));
 
-        double shift = direction[0] * vec[0] + direction[1] * vec[1];
+        shift = direction[0] * vec[0] + direction[1] * vec[1];
 
         if(shift <= 0 || shift >= directionnorm){
+            /** Coordinates of orthogonal projection are not between node1-node2.*/
             proj.setProjectedCoords(-1.0,-1.0);
             return proj;
         }
 
-        double[] coordsxy = new double[2];
         coordsxy[0] = shift*direction[0];
         coordsxy[1] = shift*direction[1];
 
-        coords[0] = coordsxy[0] + phi;
-        coords[1] = coordsxy[1] / Math.cos(Math.toRadians(phi)) + lambda;
-
-        proj.setProjectedCoords(coords[0], coords[1]);
+        proj.setProjectedCoords(coordsxy[0] + phi, 
+                                coordsxy[1] / Math.cos(Math.toRadians(phi)) + lambda);
 
         return proj;
     }
@@ -377,7 +384,6 @@ class Dijkstra implements HttpHandler {
     }
 
     private NodeProj findNextStreet(double lat, double lng){
-        double[] coords = new double[2];
 
         int[][] keys = findFrames(lat, lng);
         if(keys[0][0] == -1){
@@ -402,22 +408,17 @@ class Dijkstra implements HttpHandler {
 
                 projection = calculateOrthogonalPoint(projection);
 
-                coords[0] = projection.getProjectedCoords()[0];
-                coords[1] = projection.getProjectedCoords()[1];
-
-                if(coords[0] == -1.0){
-                    coords[0] = graph.getNodeLat(nodeid);
-                    coords[1] = graph.getNodeLng(nodeid);
+                if(projection.getProjectedCoords()[0] == -1){
+                    distbuff = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], lat, lng);
                 }
-                distbuff = calculateDistance(coords[0],coords[1], lat, lng);
+                else{
+                    distbuff = calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], lat, lng);
+                }
+
                 if(distbuff < dist){
                     startnodeindex = nodeid;
                     dist = distbuff;
                     projectionfinal = new NodeProj(projection);
-
-                    this.offsetCoords[0] = coords[0];
-                    this.offsetCoords[1] = coords[1];
-                    this.secondnode = this.nodebuff;
                 }
             }
         }
@@ -432,7 +433,7 @@ class Dijkstra implements HttpHandler {
             System.out.println("Point on node...");
             System.out.println("Node Coords: " + graph.getNodeLat(startnodeindex) + "," +  + graph.getNodeLng(startnodeindex));
         }
-
+        
         return projectionfinal;
     }
 
