@@ -96,14 +96,7 @@ class Dijkstra implements HttpHandler {
             return "";
         }
         NodeProj startProj = new NodeProj(ret);
-        // this.startNode = ret.getN1ID();
-        // int secondnodestart;
-        // if(ret.getProjectedCoords()[0] == -1.0){
-        //     secondnodestart = -1;
-        // }
-        // else{
-        //     secondnodestart = ret.getN2ID();
-        // }
+
         
 
         System.out.println("Endnode: ");
@@ -113,19 +106,6 @@ class Dijkstra implements HttpHandler {
             return "";
         }
         NodeProj endProj = new NodeProj(ret);
-        
-        // this.endNode = ret.getN1ID();
-        // int secondnodeend;
-        // if(ret.getProjectedCoords()[0] == -1.0){
-        //     secondnodeend = -1;
-        // }
-        // else{
-        //     secondnodeend = ret.getN2ID();
-        // }
-        
-
-
-
 
 
 
@@ -154,14 +134,26 @@ class Dijkstra implements HttpHandler {
             front.add(n);
         }
         else{
-            double dist1 = calculateDistance(startProj.getN1Coords()[0], startProj.getN1Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
-            double dist2 = calculateDistance(startProj.getN2Coords()[0], startProj.getN2Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
-            Node n1 = new Node(dist1, startProj.getN1ID(), -1);
-            Node n2 = new Node(dist2, startProj.getN2ID(), -1);
-            front.add(n1);
-            front.add(n2);
-        }
+            for(int i = graph.getNodeOffset(startProj.getN1ID()); i < graph.getNodeOffset(startProj.getN1ID()+1); i++){
+                if(graph.getEdges(i) == startProj.getN2ID()){
+                    double dist2 = calculateDistance(startProj.getN2Coords()[0], startProj.getN2Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
+                    Node n2 = new Node(dist2, startProj.getN2ID(), -1);
+                    front.add(n2);
 
+                }
+            }
+            for(int i = graph.getNodeOffset(startProj.getN2ID()); i < graph.getNodeOffset(startProj.getN2ID()+1); i++){
+                if(graph.getEdges(i) == startProj.getN1ID()){
+                    double dist1 = calculateDistance(startProj.getN1Coords()[0], startProj.getN1Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
+                    Node n1 = new Node(dist1, startProj.getN1ID(), -1);
+                    front.add(n1);
+                }
+            }
+        }
+        boolean foundend1 = false;
+        boolean foundend2 = false;
+        double distance1 = Double.POSITIVE_INFINITY;
+        double distance2 = Double.POSITIVE_INFINITY;
         
 
         while (!front.isEmpty()) {
@@ -176,12 +168,16 @@ class Dijkstra implements HttpHandler {
             previousNode[n.ID] = n.previous;
 
 			if (n.ID == endNode) {
-				break;
+                foundend1 = true;
+                distance1 = n.distance;
             }
             if (n.ID == endNode2) {
-                endNode = endNode2;
-				break;
-			}
+                foundend2 = true;
+                distance2 = n.distance;
+            }
+            if(foundend1 && foundend2){
+                break;
+            }
 
 			int endFor = graph.getNodeOffset(n.ID + 1);
 
@@ -197,6 +193,32 @@ class Dijkstra implements HttpHandler {
 				front.add(new Node(newWeight, neighbor, n.ID));
 
 			}
+        }
+
+        if(endNode2 != endNode){
+            boolean oneway1 = true;
+            boolean oneway2 = true;
+            for(int i = graph.getNodeOffset(endProj.getN1ID()); i < graph.getNodeOffset(endProj.getN1ID()+1); i++){
+                if(graph.getEdges(i) == endProj.getN2ID()){
+                    oneway1 = false;
+                    distance2 += calculateDistance(endProj.getN2Coords()[0], endProj.getN2Coords()[1], endProj.getProjectedCoords()[0], endProj.getProjectedCoords()[1]);
+                }
+            }
+            for(int i = graph.getNodeOffset(endProj.getN2ID()); i < graph.getNodeOffset(endProj.getN2ID()+1); i++){
+                if(graph.getEdges(i) == endProj.getN1ID()){
+                    oneway2 = false;
+                    distance1 += calculateDistance(endProj.getN1Coords()[0], endProj.getN1Coords()[1], endProj.getProjectedCoords()[0], endProj.getProjectedCoords()[1]);
+                }
+            }
+            if(oneway1 == false && oneway2 == false){
+                if(distance1 > distance2){
+                    endNode = endNode2;
+                }
+            }else{
+                if(oneway1 == true){
+                    endNode = endNode2;
+                }
+            }
         }
         
 
@@ -215,7 +237,7 @@ class Dijkstra implements HttpHandler {
 		}
 		System.out.println("Done with dijkstra");
 
-        return generateGeoJson(result, startProj);
+        return generateGeoJson(result, startProj,endProj);
     }
 
 
@@ -497,7 +519,7 @@ class Dijkstra implements HttpHandler {
         return dist;
     }
 
-    private String generateGeoJson(ArrayList<Integer> routenodes, NodeProj startProj){
+    private String generateGeoJson(ArrayList<Integer> routenodes, NodeProj startProj, NodeProj endProj){
         String geojson = "";
 
         String prestring = "";
@@ -513,6 +535,7 @@ class Dijkstra implements HttpHandler {
             data = "[" + startProj.getProjectedCoords()[1] + "," + startProj.getProjectedCoords()[0] + "],";
         }
 
+
         for(int i = 0; i < routenodes.size(); i++){
             position = "[";
             position = position + graph.getNodeLng(routenodes.get(i)) + "";
@@ -522,6 +545,10 @@ class Dijkstra implements HttpHandler {
             if(i < routenodes.size()-1){
                 data = data + ",";
             }
+        }
+
+        if(endProj.getProjectedCoords()[0] != -1){
+            data = data + ",[" + endProj.getProjectedCoords()[1] + "," + endProj.getProjectedCoords()[0] + "]";
         }
 
         geojson = prestring + data + poststring;
