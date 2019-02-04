@@ -99,6 +99,10 @@ class Dijkstra implements HttpHandler {
         }
         NodeProj endProj = new NodeProj(ret);
 
+        if((endProj.getN1ID() == startProj.getN1ID() && endProj.getN2ID() == startProj.getN2ID()) ||
+            (endProj.getN1ID() == startProj.getN2ID() && endProj.getN2ID() == startProj.getN1ID())){
+            return generateGeoJson(new ArrayList<Integer>(), startProj,endProj);
+        }
 
 
         
@@ -523,7 +527,10 @@ class Dijkstra implements HttpHandler {
         poststring = "]}}]}";
 
         if(startProj.getProjectedCoords()[0] != -1){
-            data = "[" + startProj.getProjectedCoords()[1] + "," + startProj.getProjectedCoords()[0] + "],";
+            data = "[" + startProj.getProjectedCoords()[1] + "," + startProj.getProjectedCoords()[0] + "]";
+        }
+        if(routenodes.size() > 0){
+            data = data + ",";
         }
 
 
