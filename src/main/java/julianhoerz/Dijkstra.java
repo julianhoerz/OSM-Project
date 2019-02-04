@@ -22,18 +22,10 @@ class Dijkstra implements HttpHandler {
     double endLat;
     double endLng;
 
-    int startNode;
-    int endNode;
-
-    double[] offsetCoords;
-    int nodebuff;
-    int secondnode;
-
     Graph graph;
 
     Dijkstra(Graph graph){
         this.graph = graph;
-        this.offsetCoords = new double[2];
     }
 
     @Override
@@ -122,8 +114,9 @@ class Dijkstra implements HttpHandler {
         }
         
         Node n;
-        this.endNode = endProj.getN1ID();
-        int endNode2 = this.endNode;
+        int endNode;
+        endNode = endProj.getN1ID();
+        int endNode2 = endNode;
         if(endProj.getProjectedCoords()[0] != -1){
             endNode2 = endProj.getN2ID();
         }
@@ -342,19 +335,15 @@ class Dijkstra implements HttpHandler {
 
     private NodeProj calculateOrthogonalPoint(NodeProj projection){
         double[] nodecoords = projection.getN1Coords();
-        double dist;
-        dist = calculateDistance(nodecoords[0], nodecoords[1], projection.getInitialCoords()[0], projection.getInitialCoords()[1]); 
 
-        int[] successorId;
         int startindex = graph.getNodeOffset(projection.getN1ID());
         int endindex = graph.getNodeOffset(projection.getN1ID() + 1);
-        successorId = new int[endindex-startindex];
-        if(successorId.length == 0){
+        if(startindex == endindex){
             projection.setProjectedCoords(-1.0,-1.0);
             return projection;
         }
 
-        double[] coordsbuff = new double[2];
+        double dist = Double.POSITIVE_INFINITY;
         double distbuff;
         NodeProj projbuff = new NodeProj(projection);
         int nodeid;
@@ -365,12 +354,13 @@ class Dijkstra implements HttpHandler {
 
             projbuff = projection(projbuff);
 
-            coordsbuff = projbuff.getProjectedCoords();
-
-            if(coordsbuff[0] == -1.0){
+            if(projbuff.getProjectedCoords()[0] == -1.0){
                 continue;
             }
-            distbuff = calculateDistance(coordsbuff[0], coordsbuff[1],projbuff.getInitialCoords()[0], projbuff.getInitialCoords()[1]);
+            distbuff = calculateDistance(projbuff.getProjectedCoords()[0], 
+                                            projbuff.getProjectedCoords()[1],
+                                            projbuff.getInitialCoords()[0],
+                                            projbuff.getInitialCoords()[1]);
             if(distbuff < dist){
                 dist = distbuff;
                 projection.setN2Coords(projbuff.getN2Coords()[0], projbuff.getN2Coords()[1]);
@@ -378,8 +368,6 @@ class Dijkstra implements HttpHandler {
                 projection.setProjectedCoords(projbuff.getProjectedCoords()[0], projbuff.getProjectedCoords()[1]);
             }
         }
-
-
         return projection;
     }
 
@@ -406,7 +394,9 @@ class Dijkstra implements HttpHandler {
                 projection.setN1Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
                 projection.setN1ID(nodeid);
 
+
                 projection = calculateOrthogonalPoint(projection);
+
 
                 if(projection.getProjectedCoords()[0] == -1){
                     distbuff = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], lat, lng);
@@ -433,7 +423,7 @@ class Dijkstra implements HttpHandler {
             System.out.println("Point on node...");
             System.out.println("Node Coords: " + graph.getNodeLat(startnodeindex) + "," +  + graph.getNodeLng(startnodeindex));
         }
-        
+
         return projectionfinal;
     }
 
@@ -495,8 +485,8 @@ class Dijkstra implements HttpHandler {
         System.out.println("Endnode Coords: " + graph.getNodeLat(endnodeindex) + ", " + graph.getNodeLng(endnodeindex));
         System.out.println("Endnode ID: " + graph.getNodeId(endnodeindex));
 
-        this.startNode = startnodeindex;
-        this.endNode = endnodeindex;
+        // this.startNode = startnodeindex;
+        // this.endNode = endnodeindex;
 
         return true;
 
