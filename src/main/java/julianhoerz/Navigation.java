@@ -17,17 +17,16 @@ import com.sun.net.httpserver.HttpServer;
 
 public class Navigation implements HttpHandler {
 
-    double startLat;
-    double startLng;
-    double endLat;
-    double endLng;
+
 
     Graph graph;
     Dijkstra dijkstra;
+    Draw draw;
 
     Navigation(Graph graph){
         this.graph = graph;
-        dijkstra = new Dijkstra(graph);
+        this.dijkstra = new Dijkstra(graph);
+        this.draw = new Draw(graph);
     }
 
     @Override
@@ -53,16 +52,21 @@ public class Navigation implements HttpHandler {
         if(parts.length == 3){
             String[] parts2 = parts[2].split("\\,");
             if(parts2.length == 4){
-                this.startLat = Double.valueOf(parts2[1]);
-                this.startLng = Double.valueOf(parts2[0]);
-                this.endLat = Double.valueOf(parts2[3]);
-                this.endLng = Double.valueOf(parts2[2]);
 
-                System.out.println("Start: " + this.startLat + ", " + this.startLng);
-                System.out.println("End: " + this.endLat + ", " + this.endLng);
+                double startLat;
+                double startLng;
+                double endLat;
+                double endLng;
+
+                startLat = Double.valueOf(parts2[1]);
+                startLng = Double.valueOf(parts2[0]);
+                endLat = Double.valueOf(parts2[3]);
+                endLng = Double.valueOf(parts2[2]);
+
+                System.out.println("Start: " + startLat + ", " + startLng);
+                System.out.println("End: " + endLat + ", " + endLng);
                 
                 geojson = this.dijkstra.startDijkstra(startLat,startLng,endLat,endLng);
-                //System.out.println("" + geojson);
             }
         }
 

@@ -18,9 +18,13 @@ class Dijkstra {
 
 
     Graph graph;
+    Draw draw;
+    MathFunctions mathFunctions;
 
     Dijkstra(Graph graph){
         this.graph = graph;
+        this.draw = new Draw(graph);
+        this.mathFunctions = new MathFunctions();
     }
 
 
@@ -55,7 +59,7 @@ class Dijkstra {
 
         if((endProj.getN1ID() == startProj.getN1ID() && endProj.getN2ID() == startProj.getN2ID()) ||
             (endProj.getN1ID() == startProj.getN2ID() && endProj.getN2ID() == startProj.getN1ID())){
-            return generateGeoJson(new ArrayList<Integer>(), startProj,endProj);
+            return this.draw.generateGeoJson(new ArrayList<Integer>(), startProj,endProj);
         }
 
 
@@ -87,7 +91,7 @@ class Dijkstra {
         else{
             for(int i = graph.getNodeOffset(startProj.getN1ID()); i < graph.getNodeOffset(startProj.getN1ID()+1); i++){
                 if(graph.getEdges(i) == startProj.getN2ID()){
-                    double dist2 = calculateDistance(startProj.getN2Coords()[0], startProj.getN2Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
+                    double dist2 = this.mathFunctions.calculateDistance(startProj.getN2Coords()[0], startProj.getN2Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
                     Node n2 = new Node(dist2, startProj.getN2ID(), -1);
                     front.add(n2);
 
@@ -95,7 +99,7 @@ class Dijkstra {
             }
             for(int i = graph.getNodeOffset(startProj.getN2ID()); i < graph.getNodeOffset(startProj.getN2ID()+1); i++){
                 if(graph.getEdges(i) == startProj.getN1ID()){
-                    double dist1 = calculateDistance(startProj.getN1Coords()[0], startProj.getN1Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
+                    double dist1 = this.mathFunctions.calculateDistance(startProj.getN1Coords()[0], startProj.getN1Coords()[1], startProj.getProjectedCoords()[0], startProj.getProjectedCoords()[1]);
                     Node n1 = new Node(dist1, startProj.getN1ID(), -1);
                     front.add(n1);
                 }
@@ -152,13 +156,13 @@ class Dijkstra {
             for(int i = graph.getNodeOffset(endProj.getN1ID()); i < graph.getNodeOffset(endProj.getN1ID()+1); i++){
                 if(graph.getEdges(i) == endProj.getN2ID()){
                     oneway1 = false;
-                    distance2 += calculateDistance(endProj.getN2Coords()[0], endProj.getN2Coords()[1], endProj.getProjectedCoords()[0], endProj.getProjectedCoords()[1]);
+                    distance2 += this.mathFunctions.calculateDistance(endProj.getN2Coords()[0], endProj.getN2Coords()[1], endProj.getProjectedCoords()[0], endProj.getProjectedCoords()[1]);
                 }
             }
             for(int i = graph.getNodeOffset(endProj.getN2ID()); i < graph.getNodeOffset(endProj.getN2ID()+1); i++){
                 if(graph.getEdges(i) == endProj.getN1ID()){
                     oneway2 = false;
-                    distance1 += calculateDistance(endProj.getN1Coords()[0], endProj.getN1Coords()[1], endProj.getProjectedCoords()[0], endProj.getProjectedCoords()[1]);
+                    distance1 += this.mathFunctions.calculateDistance(endProj.getN1Coords()[0], endProj.getN1Coords()[1], endProj.getProjectedCoords()[0], endProj.getProjectedCoords()[1]);
                 }
             }
             if(oneway1 == false && oneway2 == false){
@@ -188,7 +192,7 @@ class Dijkstra {
 		}
 		System.out.println("Done with dijkstra");
 
-        return generateGeoJson(result, startProj,endProj);
+        return this.draw.generateGeoJson(result, startProj,endProj);
     }
 
 
@@ -315,7 +319,7 @@ class Dijkstra {
             if(projbuff.getProjectedCoords()[0] == -1.0){
                 continue;
             }
-            distbuff = calculateDistance(projbuff.getProjectedCoords()[0], 
+            distbuff = this.mathFunctions.calculateDistance(projbuff.getProjectedCoords()[0], 
                                             projbuff.getProjectedCoords()[1],
                                             projbuff.getInitialCoords()[0],
                                             projbuff.getInitialCoords()[1]);
@@ -357,10 +361,10 @@ class Dijkstra {
 
 
                 if(projection.getProjectedCoords()[0] == -1){
-                    distbuff = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], lat, lng);
+                    distbuff = this.mathFunctions.calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], lat, lng);
                 }
                 else{
-                    distbuff = calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], lat, lng);
+                    distbuff = this.mathFunctions.calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], lat, lng);
                 }
 
                 if(distbuff < dist){
@@ -411,7 +415,7 @@ class Dijkstra {
         int startnodeindex = -1;
         for(int p = 1; p < 9 ; p ++){
             for(int i = startKeys[p][0] ; i < startKeys[p][1]; i ++){
-                distbuff = calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), startLat, startLng); 
+                distbuff = this.mathFunctions.calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), startLat, startLng); 
                 if(distbuff < dist){
                     startnodeindex = i;
                     dist = distbuff;
@@ -423,7 +427,7 @@ class Dijkstra {
         int endnodeindex = -1;
         for(int p = 1; p < 9 ; p ++){
             for(int i = endKeys[p][0] ; i < endKeys[p][1]; i ++){
-                distbuff = calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), endLat, endLng); 
+                distbuff = this.mathFunctions.calculateDistance(graph.getNodeLat(i), graph.getNodeLng(i), endLat, endLng); 
                 if(distbuff < dist){
                     endnodeindex = i;
                     dist = distbuff;
@@ -448,65 +452,6 @@ class Dijkstra {
 
         return true;
 
-    }
-
-
-    private double calculateDistance(double lat1, double lng1, double lat2, double lng2){
-        double earthRadius = 6371000;
-
-        double dLat = Math.toRadians(lat2-lat1);
-        double dLng = Math.toRadians(lng2-lng1);
-
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLng/2) * Math.sin(dLng/2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-        float dist = (float) (earthRadius * c);
-    
-        return dist;
-    }
-
-    private String generateGeoJson(ArrayList<Integer> routenodes, NodeProj startProj, NodeProj endProj){
-        String geojson = "";
-
-        String prestring = "";
-        String poststring = "";
-        String data = "";
-        String position ="";
-
-        prestring = "{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\",\"properties\": {},\"geometry\": {\"type\": \"LineString\",\"coordinates\": [";
-
-        poststring = "]}}]}";
-
-        if(startProj.getProjectedCoords()[0] != -1){
-            data = "[" + startProj.getProjectedCoords()[1] + "," + startProj.getProjectedCoords()[0] + "]";
-        }
-        if(routenodes.size() > 0){
-            data = data + ",";
-        }
-
-
-        for(int i = 0; i < routenodes.size(); i++){
-            position = "[";
-            position = position + graph.getNodeLng(routenodes.get(i)) + "";
-            position = position + ",";
-            position = position + graph.getNodeLat(routenodes.get(i)) + "";
-            data = data + position + "]";
-            if(i < routenodes.size()-1){
-                data = data + ",";
-            }
-        }
-
-        if(endProj.getProjectedCoords()[0] != -1){
-            data = data + ",[" + endProj.getProjectedCoords()[1] + "," + endProj.getProjectedCoords()[0] + "]";
-        }
-
-        geojson = prestring + data + poststring;
-
-        return geojson;
-    
     }
 
 }
