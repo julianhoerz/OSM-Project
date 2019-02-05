@@ -141,6 +141,53 @@ public class Graph {
     }
 
 
+    public int[][] findFrames(double lat, double lng){
+
+        int[][] keys = {{0, 0}, {0, 0}, {0, 0}, 
+                            {0, 0}, {0, 0}, {0, 0},
+                            {0, 0}, {0, 0}, {0, 0}};
+
+        int latint = (int) Math.floor(lat * 10);
+        int lngint = (int) Math.floor(lng * 10);
+
+        String keylat;
+        String keylng;
+        int cnt = 0;
+        for(int i = -1; i <= 1; i ++){
+            for(int p = -1; p <= 1; p ++){
+                keylat = "" + ((int) latint + i );
+                keylng = "" + ((int) lngint + p );
+                while (keylat.length() < 4) {keylat = "0" + keylat;}
+                while (keylng.length() < 4) {keylng = "0" + keylng;}
+                keys[cnt][0] = Integer.parseInt("" + keylat + keylng);
+                cnt ++;
+            }
+        }
+        boolean found = false;
+        int currentKey;
+        for(int i = 0; i < getFramesLength(); i ++){
+            currentKey = getOffsetFrames(i, 0);
+
+            for(int p = 0; p < 9; p++){
+                if(currentKey == keys[p][0]){
+                    found = true;
+                    keys[p][0] = getOffsetFrames(i, 1);
+                    if(i == getFramesLength()-1){
+                        keys[p][1] = getNodesLength();
+                    }
+                    else{
+                        keys[p][1] = getOffsetFrames(i+1, 1);
+                    }
+                }
+            }
+        }
+        if(found == false){
+            keys[0][0] = -1;
+        }
+        return keys;
+    }
+
+
 
 
 }
