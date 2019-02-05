@@ -10,6 +10,7 @@ public class MapMatching{
     private double betha;
     private double discDistance; //Discard Distance for looking around GPS Data
     private MathFunctions mathFunctions;
+    private Dijkstra dijkstra;
 
 
     MapMatching(Graph graph){
@@ -18,6 +19,7 @@ public class MapMatching{
         this.betha = 4; //Proposed by Paper
         this.discDistance = 200; //Proposed by Paper
         this.mathFunctions = new MathFunctions();
+        this.dijkstra = new Dijkstra(graph);
     }
 
 
@@ -36,6 +38,34 @@ public class MapMatching{
         for(int i = 0; i < observationsNumber; i ++){
             findCandidates(observations.get(i));
         }
+
+        System.out.println("Calc Transistion Probabilities...");
+        ArrayList<double[][]> transitionMatrices = new ArrayList<double[][]>();
+        for(int i = 0; i < observationsNumber-1; i++){
+            double[][] transitionMatrix;
+            transitionMatrix = calcTransitionProbability(observations.get(i),observations.get(i+1));
+            transitionMatrices.add(transitionMatrix);
+        }
+
+    }
+
+
+    private double[][] calcTransitionProbability(Observation observe1, Observation observe2){
+        int candidates1 = observe1.getCandidatesNumber();
+        int candidates2 = observe2.getCandidatesNumber();
+
+        double[][] matrix = new double[candidates1][candidates2];
+        double distance, directDistance, pathDistance;
+        for(int i = 0 ; i < candidates1 ; i ++){
+            for(int p = 0 ; p < candidates2 ; p++){
+                directDistance = calculateDistance(observe1.getLat(), observe1.getLng(), observe2.getLat(), observe2.getLng());
+                pathDistance = this.dijkstra.dijkstraDistance(observe1.getCandidate(i).getPosition(),observe2.getCandidate(p).getPosition());
+                distance = Math.abs(directDistance - pathDistance);
+                matrix[i][p] = 1/this.betha * Math.exp(-distance/this.betha);
+            }
+        }
+
+        return matrix;
     }
 
 

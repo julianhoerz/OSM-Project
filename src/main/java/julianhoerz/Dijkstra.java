@@ -8,19 +8,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.PriorityQueue;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 
 
 
 
-class Dijkstra implements HttpHandler {
 
-    double startLat;
-    double startLng;
-    double endLat;
-    double endLng;
+class Dijkstra {
+
+
 
     Graph graph;
 
@@ -28,61 +23,20 @@ class Dijkstra implements HttpHandler {
         this.graph = graph;
     }
 
-    @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
 
-        
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+    public double dijkstraDistance(NodeProj startPoint, NodeProj endPoint){
+        double distance = 0d;
 
-        if (httpExchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,Authorization");
-            httpExchange.sendResponseHeaders(204, -1);
-            return;
-        }
-
-       // System.out.println(httpExchange.getRequestURI().toString());
-
-        String url = httpExchange.getRequestURI().toString();
-        String[] parts = url.split("\\/");
-
-        String geojson = "no route found...";
-
-        if(parts.length == 3){
-            String[] parts2 = parts[2].split("\\,");
-            if(parts2.length == 4){
-                this.startLat = Double.valueOf(parts2[1]);
-                this.startLng = Double.valueOf(parts2[0]);
-                this.endLat = Double.valueOf(parts2[3]);
-                this.endLng = Double.valueOf(parts2[2]);
-
-                System.out.println("Start: " + this.startLat + ", " + this.startLng);
-                System.out.println("End: " + this.endLat + ", " + this.endLng);
-                
-                geojson = startDijkstra();
-                //System.out.println("" + geojson);
-            }
-        }
-
-        //System.out.println("Partslength: " + parts.length);
-        // URL url = httpExchange.getRequestURI().toURL();
-
-        //System.out.println("URL: " + test);
-
-        String response = geojson;
-        httpExchange.sendResponseHeaders(200, response.length());
-        OutputStream os = httpExchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+        return distance;
     }
 
 
-    private String startDijkstra(){
+    public String startDijkstra(double startLat, double startLng, double endLat, double endLng){
         // boolean ret = findNextNode(this.startLat,this.startLng,this.endLat,this.endLng);
         NodeProj ret;
 
         System.out.println("Startnode: ");
-        ret = findNextStreet(this.startLat,this.startLng);
+        ret = findNextStreet(startLat,startLng);
         if(ret.getN1ID() == -1){
             System.out.println("Error occured while finding startnode...");
             return "";
@@ -92,7 +46,7 @@ class Dijkstra implements HttpHandler {
         
 
         System.out.println("Endnode: ");
-        ret = findNextStreet(this.endLat, this.endLng);
+        ret = findNextStreet(endLat, endLng);
         if(ret.getN1ID() == -1){
             System.out.println("Error occured while finding endnode...");
             return "";

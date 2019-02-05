@@ -20,7 +20,7 @@ public class Server{
 
     public void start() throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(3000), 0);
-        server.createContext("/dijkstra", new Dijkstra(graph));
+        server.createContext("/dijkstra", new Navigation(graph));
         server.createContext("/api", new Table(graph));
         server.setExecutor(null); // creates a default executor
         server.start();
