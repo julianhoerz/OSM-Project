@@ -58,6 +58,11 @@ public class MathFunctions{
     }
 
 
+    public double calculateDistance(double[] coord1, double[] coord2){
+        return calculateDistance(coord1[0], coord1[1], coord2[0], coord2[1]);
+    }
+
+
     public double calculateDistance(double lat1, double lng1, double lat2, double lng2){
         double earthRadius = 6371000;
 

@@ -65,8 +65,11 @@ public class Navigation implements HttpHandler {
 
                 System.out.println("Start: " + startLat + ", " + startLng);
                 System.out.println("End: " + endLat + ", " + endLng);
-                
-                geojson = this.dijkstra.startDijkstra(startLat,startLng,endLat,endLng);
+                NodeProj startProj = this.dijkstra.findNextStreet(startLat, startLng);
+                NodeProj endProj = this.dijkstra.findNextStreet(endLat, endLng);
+                ArrayList<double[]> coordinates = this.dijkstra.dijkstraCoordinates(startProj, endProj);
+                geojson = this.draw.buildGeoJson(coordinates, startLat, startLng, endLat, endLng);
+                // geojson = this.dijkstra.startDijkstra(startLat,startLng,endLat,endLng);
             }
         }
 

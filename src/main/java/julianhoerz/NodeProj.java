@@ -10,6 +10,16 @@ public class NodeProj{
     int n1ID;
     int n2ID;
 
+    /**
+     * onewaytag: 
+     * 1: n1 -> n2
+     * -1: n2 -> n1
+     * 0: twoway
+     * 2: undefined
+     */
+
+    int oneway;
+
     public NodeProj() {
         this.initialCoords = new double[2];
         this.initialCoords[0] = -1.0;
@@ -29,6 +39,7 @@ public class NodeProj{
 
         this.n1ID = -1;
         this.n2ID = -1;
+        this.oneway = 2;
     }
     
     public NodeProj(NodeProj proj) {
@@ -106,6 +117,14 @@ public class NodeProj{
 
     public int getN2ID(){
         return this.n2ID;
+    }
+
+    public int getOneway(){
+        return this.oneway;
+    }
+
+    public void setOneway(int oneway){
+        this.oneway = oneway;
     }
 
 	

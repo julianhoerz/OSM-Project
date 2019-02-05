@@ -27,12 +27,196 @@ class Dijkstra {
         this.mathFunctions = new MathFunctions();
     }
 
-
+    /** 
+     * Performs the Dijkstra Algorithm from StartPoint to the EndPoint
+     * and returns the shortest path distance.
+     */
     public double dijkstraDistance(NodeProj startPoint, NodeProj endPoint){
         double distance = 0d;
+        
+        ArrayList<double[]> coordinates;
+        coordinates = dijkstraCoordinates(startPoint, endPoint);
+        if(coordinates.size() <= 2){
+            return 0d;
+        }
+        for(int i = 0; i < coordinates.size()-1; i ++){
+            distance += mathFunctions.calculateDistance(coordinates.get(i)[0], coordinates.get(i)[1], coordinates.get(i+1)[0], coordinates.get(i+1)[1]);
+        }
 
         return distance;
     }
+
+    /**
+     * Performs the Dijkstra Algorithm from StartPoint to the EndPoint 
+     * and returns all involved coordinates.
+     */
+    public ArrayList<double[]> dijkstraCoordinates(NodeProj startPoint, NodeProj endPoint){
+        if(startPoint.getN1ID() == -1 || endPoint.getN1ID() == -1){
+            System.out.println("Invalid Start and/or End-Point");
+            return null;
+        }
+        ArrayList<double[]> coordinates = new ArrayList<double[]>();
+
+
+        /*Special Case: Both start and endpoint are between the same nodes or
+         both start and endpoint are on the same node. */
+        boolean ret = checkSpecialCase(startPoint,endPoint);
+        if(ret){
+            if(startPoint.getProjectedCoords()[0] == -1d){
+                coordinates.add(startPoint.getN1Coords());
+                coordinates.add(endPoint.getN1Coords());
+            }
+            else{
+                coordinates.add(startPoint.getProjectedCoords());
+                coordinates.add(endPoint.getProjectedCoords());
+            }
+            return coordinates;
+        }
+
+
+        /** Start Dijkstra */
+        PriorityQueue<Node> front = new PriorityQueue<Node>();
+		int[] previousNode = new int[graph.getNodesLength()]; //Stores OSM-IDs of the nodes on the final path
+		boolean[] visited = new boolean[graph.getNodesLength()];
+
+        for (int i = 0; i < graph.getNodesLength(); i++) {
+            visited[i] = false;
+            previousNode[i] = -1;
+        }
+        
+        int endNode1, endNode2;
+        endNode1 = endPoint.getN1ID();
+        endNode2 = endNode1;
+        if(endPoint.getProjectedCoords()[0] != -1){
+            endNode2 = endPoint.getN2ID();
+        }
+
+
+        /** Define Startnodes */
+        Node n;
+        double dist = 0d;
+        if(startPoint.getProjectedCoords()[0] == -1){
+            n = new Node(dist, startPoint.getN1ID(), -1);
+            front.add(n);
+        }
+        else{
+            if(startPoint.getOneway() == 0 || startPoint.getOneway() == 1){
+                dist = this.mathFunctions.calculateDistance(startPoint.getN2Coords(), startPoint.getProjectedCoords());
+                n = new Node(dist,startPoint.getN2ID(),-1);
+                front.add(n);
+            }
+            if(startPoint.getOneway() == 0 || startPoint.getOneway() == -1){
+                dist = this.mathFunctions.calculateDistance(startPoint.getN1Coords(), startPoint.getProjectedCoords());
+                n = new Node(dist,startPoint.getN1ID(),-1);
+                front.add(n);
+            }
+        }
+
+
+        boolean foundend1 = false;
+        boolean foundend2 = false;
+        double distance1 = Double.POSITIVE_INFINITY;
+        double distance2 = Double.POSITIVE_INFINITY;
+        
+
+        while (!front.isEmpty()) {
+
+			n = front.poll();
+
+			if (visited[n.ID]) {
+				continue;
+			}
+			visited[n.ID] = true;
+
+            previousNode[n.ID] = n.previous;
+
+			if (n.ID == endNode1) {
+                foundend1 = true;
+                distance1 = n.distance;
+            }
+            if (n.ID == endNode2) {
+                foundend2 = true;
+                distance2 = n.distance;
+            }
+            if(foundend1 && foundend2){
+                break;
+            }
+
+			int endFor = graph.getNodeOffset(n.ID + 1);
+
+
+			for (int i = graph.getNodeOffset(n.ID); i < endFor; i++) {
+				int neighbor = graph.getEdges(i);
+				double edgeWeight = graph.getEdgesLength(i);
+
+				// System.out.println(" - neighbor #" + neighbor + " w: " + edgeWeight);
+
+				double newWeight = n.distance + edgeWeight;
+
+				front.add(new Node(newWeight, neighbor, n.ID));
+
+			}
+        }
+
+        int finalnode = endNode1;
+        if(endNode2 != endNode1){
+            if(endPoint.getOneway() == 1){
+                finalnode = endNode1;
+            }
+            if(endPoint.getOneway() == -1){
+                finalnode = endNode2;
+            }
+            if(endPoint.getOneway() == 0){
+                distance1 += this.mathFunctions.calculateDistance(endPoint.getN1Coords(), endPoint.getProjectedCoords());
+                distance2 += this.mathFunctions.calculateDistance(endPoint.getN2Coords(), endPoint.getProjectedCoords());
+                if(distance1>distance2){
+                    finalnode = endNode2;
+                }
+                else{
+                    finalnode = endNode1;
+                }
+            }
+        }
+
+
+        if(endPoint.getProjectedCoords()[0] != -1d){
+            coordinates.add(endPoint.getProjectedCoords());
+        }
+        
+		int currentID = finalnode;
+        int currentIndex = finalnode;
+        double[] coords;
+		while (previousNode[currentIndex] != -1) {
+            coords = new double[2];
+            coords[0] = graph.getNodeLat(currentID);
+            coords[1] = graph.getNodeLng(currentID);
+			coordinates.add(coords);
+			currentID = previousNode[currentIndex];
+			currentIndex = currentID;
+        }
+        coords = new double[2];
+        coords[0] = graph.getNodeLat(currentID);
+        coords[1] = graph.getNodeLng(currentID);
+        coordinates.add(coords);
+        
+        if(startPoint.getProjectedCoords()[0] != -1d){
+            coordinates.add(startPoint.getProjectedCoords());
+        }
+
+        Collections.reverse(coordinates);
+        
+
+
+
+        System.out.println("Done with dijkstra");
+        
+
+        return coordinates;
+    }
+
+
+
+
 
 
     public String startDijkstra(double startLat, double startLng, double endLat, double endLng){
@@ -196,6 +380,48 @@ class Dijkstra {
     }
 
 
+
+    private boolean checkSpecialCase(NodeProj startPoint, NodeProj endPoint){
+
+        if(endPoint.getN1ID() == startPoint.getN2ID() && endPoint.getN2ID() == startPoint.getN1ID()){
+            double[] projbuff = new double[2];
+            projbuff[0] = endPoint.getProjectedCoords()[0];
+            projbuff[1] = endPoint.getProjectedCoords()[1];
+            endPoint.setN1ID(startPoint.getN1ID());
+            endPoint.setN1Coords(startPoint.getN1Coords()[0], startPoint.getN1Coords()[1]);
+            endPoint.setN2ID(startPoint.getN2ID());
+            endPoint.setN2Coords(startPoint.getN2Coords()[0], startPoint.getN2Coords()[1]);
+            endPoint.setProjectedCoords(projbuff[0], projbuff[1]);
+        }
+        if(endPoint.getN1ID() == startPoint.getN1ID() && endPoint.getN2ID() == startPoint.getN2ID()){
+
+            if(startPoint.getN2ID() == -1){
+                /** Start and Endpoint on the same Node */
+                return true;
+            }
+
+            double dist1, dist2;
+            dist1 = mathFunctions.calculateDistance(endPoint.getN1Coords(), endPoint.getProjectedCoords());
+            dist2 = mathFunctions.calculateDistance(startPoint.getN1Coords(), startPoint.getProjectedCoords());
+            if(dist1 > dist2){
+                /** Check connection between node1 and node2 (oneway?)*/
+                if(startPoint.getOneway() == 0 ||
+                    startPoint.getOneway() == 1){
+                    return true;
+                }
+            }
+            else{
+                /** Check connection between node2 and node1 (oneway?)*/
+                if(startPoint.getOneway() == 0 ||
+                startPoint.getOneway() == -1){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     private int[][] findFrames(double lat, double lng){
 
         int[][] keys = {{0, 0}, {0, 0}, {0, 0}, 
@@ -333,7 +559,7 @@ class Dijkstra {
         return projection;
     }
 
-    private NodeProj findNextStreet(double lat, double lng){
+    public NodeProj findNextStreet(double lat, double lng){
 
         int[][] keys = findFrames(lat, lng);
         if(keys[0][0] == -1){
@@ -375,6 +601,8 @@ class Dijkstra {
             }
         }
 
+        checkOneWay(projectionfinal);
+
 
         if(projectionfinal.getProjectedCoords()[0] != -1.0){
             System.out.println("Point not on node...");
@@ -387,6 +615,47 @@ class Dijkstra {
         }
 
         return projectionfinal;
+    }
+
+    private void checkOneWay(NodeProj point){
+        int startindex, endindex;
+        boolean n12 = false;
+        boolean n21 = false;
+
+        startindex = graph.getNodeOffset(point.getN1ID());
+        endindex = graph.getNodeOffset(point.getN1ID() + 1);
+        for(int i = startindex; i < endindex; i++){
+            if(graph.getEdges(i) == point.getN2ID()){
+                n12 = true;
+                break;
+            }
+        }
+
+        startindex = graph.getNodeOffset(point.getN2ID());
+        endindex = graph.getNodeOffset(point.getN2ID() + 1);
+        for(int i = startindex; i < endindex; i++){
+            if(graph.getEdges(i) == point.getN1ID()){
+                n21 = true;
+                break;
+            }
+        }
+
+        if(n12 == true && n21 == true){
+            point.setOneway(0);
+        }
+
+        if(n12 == true && n21 == false){
+            point.setOneway(1);
+        }
+
+        if(n12 == false && n21 == true){
+            point.setOneway(-1);
+        }
+
+        if(n12 == false && n21 == false){
+            point.setOneway(2);
+        }
+
     }
 
 
