@@ -3,6 +3,7 @@ package julianhoerz;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class MapMatching{
@@ -25,7 +26,7 @@ public class MapMatching{
     }
 
 
-    public void startMapMatching(ArrayList<double[]> rawData){
+    public ArrayList<double[]> startMapMatching(ArrayList<double[]> rawData){
         // Check data...
         //if(rawData)
 
@@ -71,6 +72,9 @@ public class MapMatching{
         }
 
         ArrayList<double[]> coordinates = viterbiAlgorithmBwd(viterbiReferences,observations);
+    
+        return coordinates;
+
     }
 
 
@@ -80,21 +84,24 @@ public class MapMatching{
         double[] coordinate;
         double max = 0;
         int startindex = -1;
-        int startcoord = -1;
         double[][] elem = refs.get(coordsNumber-1);
         for(int i = 0; i < elem.length; i ++){
             if(elem[i][0] > max){
                 max = elem[i][0];
-                startindex = (int) elem[i][1];
-                startcoord = i;
+                startindex = i;
             }
         }
-        coordinate = observations.get(coordsNumber-1).getCandidate(startcoord).getPosition().getCoordinates();
-        coordinates.add(coordinate);
+
+        int nextindex;
+        for(int i = coordsNumber-1; i >= 0; i--){
+            nextindex = (int) refs.get(i)[startindex][1];
+            coordinate= observations.get(i).getCandidate(startindex).getPosition().getCoordinates();
+            coordinates.add(coordinate);
+            startindex = nextindex;
+        }
 
 
-
-        //Collections.reverse
+        Collections.reverse(coordinates);
         return coordinates;
     }
 
