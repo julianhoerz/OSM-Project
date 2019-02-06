@@ -61,7 +61,16 @@ public class NodeProj{
 
         this.n1ID = proj.getN1ID();
         this.n2ID = proj.getN2ID();
-	}
+    }
+    
+    public double[] getCoordinates(){
+        if(this.projectedCoords[0] == -1){
+            return this.n1Coords;
+        }
+        else{
+            return this.projectedCoords;
+        } 
+    }
 	
 
     public void setInitialCoords(double initialLat, double initialLng){
