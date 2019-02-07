@@ -74,7 +74,7 @@ public class MapMatchingServer implements HttpHandler{
                 ArrayList<double[]> finalCoords;
                 finalCoords = this.mapMatching.startMapMatching(rawData);
                 geojson = this.draw.buildGeoJson(finalCoords,0d,0d,0d,0d);
-                System.out.println(geojson);
+                // System.out.println(geojson);
             }
         }
 

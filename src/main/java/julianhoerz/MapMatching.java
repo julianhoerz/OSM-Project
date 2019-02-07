@@ -2,11 +2,9 @@
 package julianhoerz;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
-import javax.swing.text.html.HTMLDocument.BlockElement;
 
 public class MapMatching{
 
@@ -20,8 +18,8 @@ public class MapMatching{
 
     MapMatching(Graph graph){
         this.graph = graph;
-        this.sigma = 4; //Proposed by Paper
-        this.betha = 4; //Proposed by Paper
+        this.sigma = 20; //Proposed by Paper
+        this.betha = 30; //Proposed by Paper
         this.discDistance = 200; //Proposed by Paper
         this.mathFunctions = new MathFunctions();
         this.dijkstra = new Dijkstra(graph);
@@ -73,19 +71,28 @@ public class MapMatching{
             viterbiReferences.add(finalcost);
         }
 
-        ArrayList<double[]> coordinates = viterbiAlgorithmBwd(viterbiReferences,observations);
+        ArrayList<NodeProj> coordinates = viterbiAlgorithmBwd(viterbiReferences,observations);
+
+        ArrayList<double[]> composedRoute = new ArrayList<double[]>();
+        ArrayList<double[]> buff;
+        for(int i = 0; i < coordinates.size()-1; i++){
+            buff = this.dijkstra.dijkstraCoordinates(coordinates.get(i), coordinates.get(i+1));
+            for(int p = 0; p < buff.size(); p ++){
+                composedRoute.add(buff.get(p));
+            }
+        }
 
         System.out.println("Map Matching Finished");
     
-        return coordinates;
+        return composedRoute;
 
     }
 
 
-    private ArrayList<double[]> viterbiAlgorithmBwd(ArrayList<double[][]> refs, ArrayList<Observation> observations){
+    private ArrayList<NodeProj> viterbiAlgorithmBwd(ArrayList<double[][]> refs, ArrayList<Observation> observations){
         int coordsNumber = refs.size();
-        ArrayList<double[]> coordinates = new ArrayList<double[]>();
-        double[] coordinate;
+        ArrayList<NodeProj> coordinates = new ArrayList<NodeProj>();
+        NodeProj coordinate;
         double max = 0;
         int startindex = -1;
         double[][] elem = refs.get(coordsNumber-1);
@@ -99,7 +106,7 @@ public class MapMatching{
         int nextindex;
         for(int i = coordsNumber-1; i >= 0; i--){
             nextindex = (int) refs.get(i)[startindex][1];
-            coordinate= observations.get(i).getCandidate(startindex).getPosition().getCoordinates();
+            coordinate= observations.get(i).getCandidate(startindex).getPosition();
             coordinates.add(coordinate);
             startindex = nextindex;
         }
@@ -119,13 +126,13 @@ public class MapMatching{
         for(int i = 0; i < candidatesNumber; i ++){
             finalCost[i][0] = 0;
             for(int p = 0; p < initNumber; p ++){
-                probability = initialCost[p][0] + transitionMatrix[p][i];
+                probability = initialCost[p][0] * transitionMatrix[p][i];
                 if(probability>finalCost[i][0]){
                     finalCost[i][0] = probability;
                     finalCost[i][1] = p; 
                 }
             }
-            finalCost[i][0] += observation.getCandidate(i).getProbability();
+            finalCost[i][0] *= observation.getCandidate(i).getProbability();
         }
 
         return finalCost;
@@ -138,9 +145,9 @@ public class MapMatching{
 
         double[][] matrix = new double[candidates1][candidates2];
         double distance, directDistance, pathDistance;
+        directDistance = calculateDistance(observe1.getLat(), observe1.getLng(), observe2.getLat(), observe2.getLng());
         for(int i = 0 ; i < candidates1 ; i ++){
             for(int p = 0 ; p < candidates2 ; p++){
-                directDistance = calculateDistance(observe1.getLat(), observe1.getLng(), observe2.getLat(), observe2.getLng());
                 pathDistance = this.dijkstra.dijkstraDistance(observe1.getCandidate(i).getPosition(),observe2.getCandidate(p).getPosition());
                 distance = Math.abs(directDistance - pathDistance);
                 matrix[i][p] = 1/this.betha * Math.exp(-distance/this.betha);
@@ -164,7 +171,7 @@ public class MapMatching{
         NodeProj projection = new NodeProj();
         projection.setInitialCoords(observation.getLat(), observation.getLng());
 
-        HashMap<Integer,Integer[]> checked = new HashMap<Integer,Integer[]>();
+        HashMap<Integer,ArrayList<Integer>> checked = new HashMap<Integer,ArrayList<Integer>>();
 
         for(int p = 1; p < 9 ; p ++){
             for(int nodeid = keys[p][0] ; nodeid < keys[p][1]; nodeid ++){
@@ -172,44 +179,37 @@ public class MapMatching{
                 projection.setN1Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
                 projection.setN1ID(nodeid);
                 dist = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], observation.getLat(), observation.getLng());
-
-                if(dist < this.discDistance){
-                    double probability = calcCandidateProbability(dist);
-                    observation.addCandidate(new Candidate(new NodeProj(projection), probability));    
-                }
-
+/////////////////////////////////////////////////////////////
+                // if(dist < this.discDistance){
+                //     double probability = calcCandidateProbability(dist);
+                //     observation.addCandidate(new Candidate(new NodeProj(projection), probability));    
+                // }
+////////////////////////////////////////////////////////////
                 int startindex = graph.getNodeOffset(nodeid); 
                 int endindex = graph.getNodeOffset(nodeid+1);
+                ArrayList<Integer> paths = new ArrayList<Integer>();
                 for(int i = startindex; i < endindex; i ++){
                     int nodeid2 = graph.getEdges(i);
-                    
-                    // String multipleid = nodeid2 + nodeid + "";
+                    paths.add(nodeid2);
                     if(checked.containsKey(nodeid2)){
-                        Boolean done = false;
-                        Integer[] test = checked.get(nodeid2);
-                        for(int r = 0; r < test.length; r++){
-                            if(test[r] == nodeid){
-                                done = true;
-                            }
-                        }
-                        if(done){
+                        if(checked.get(nodeid2).contains(nodeid)){
                             continue;
                         }
                     }
-                    // multipleid = nodeid + nodeid2 + "";
-                    // checked.put(Integer.parseInt(multipleid), true);
+
                     projection.setN2Coords(graph.getNodeLat(nodeid2), graph.getNodeLng(nodeid2));
                     projection.setN2ID(nodeid2);
                     projection = mathFunctions.projection(projection);
                     if(projection.getProjectedCoords()[0] != -1d){
                         dist = calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], observation.getLat(), observation.getLng());
                         if(dist < this.discDistance){
-                            System.out.println("Candidate Coords: " + projection.getProjectedCoords()[0] + "," + projection.getProjectedCoords()[1]);
+                            //System.out.println("Candidate Coords: " + projection.getProjectedCoords()[0] + "," + projection.getProjectedCoords()[1]);
                             double probability = calcCandidateProbability(dist);
                             observation.addCandidate(new Candidate(new NodeProj(projection), probability));
                         }
                     }
                 }
+                checked.put(nodeid, paths);
             }
         }
     }
@@ -245,7 +245,7 @@ public class MapMatching{
         processedData.add(rawData.get(0));
         for(int i= 0; i < rawData.size()-1; i++){
             dist = this.mathFunctions.calculateDistance(rawData.get(i), rawData.get(i+1));
-            if(dist > 2*this.sigma){
+            if(dist > this.sigma){
                 processedData.add(rawData.get(i+1));
             }
         }
@@ -254,3 +254,55 @@ public class MapMatching{
     }
 
 }
+
+
+
+
+
+
+
+
+
+/*
+
+53.08005722583211, 8.73013973236084
+53.08079837100151, 8.727795481681824
+53.08243206768091, 8.72239351272583
+53.09223294579872, 8.693103790283203
+
+
+
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.73013973236084,
+            53.08005722583211
+          ],
+          [
+            8.727795481681824,
+            53.08079837100151
+          ],
+          [
+            8.72239351272583,
+            53.08243206768091
+          ],
+          [
+            8.693103790283203,
+            53.09223294579872
+          ]
+        ]
+      }
+    }
+  ]
+}
+
+
+
+*/

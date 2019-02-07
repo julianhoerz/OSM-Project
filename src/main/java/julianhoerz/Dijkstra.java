@@ -32,7 +32,7 @@ class Dijkstra {
         
         ArrayList<double[]> coordinates;
         coordinates = dijkstraCoordinates(startPoint, endPoint);
-        if(coordinates.size() <= 2){
+        if(coordinates.size() < 2){
             return 0d;
         }
         for(int i = 0; i < coordinates.size()-1; i ++){
@@ -52,6 +52,11 @@ class Dijkstra {
             return null;
         }
         ArrayList<double[]> coordinates = new ArrayList<double[]>();
+        /** Check Onewaytag (has been computed) */
+        this.checkOneWay(startPoint);
+        this.checkOneWay(endPoint);
+        
+        
 
 
         /*Special Case: Both start and endpoint are between the same nodes or
@@ -68,6 +73,7 @@ class Dijkstra {
             }
             return coordinates;
         }
+
 
 
         /** Start Dijkstra */

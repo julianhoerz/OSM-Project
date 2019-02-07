@@ -96,6 +96,7 @@ public class NodeProj{
         this.n1Coords[0] = n1Lat;
         this.n1Coords[1] = n1Lng;
         this.setProjectedCoords(-1.0, -1.0);
+        this.oneway = 2;
     }
 
     public double[] getN1Coords(){
@@ -106,6 +107,7 @@ public class NodeProj{
         this.n2Coords[0] = n2Lat;
         this.n2Coords[1] = n2Lng;
         this.setProjectedCoords(-1.0, -1.0);
+        this.oneway = 2;
     }
 
     public double[] getN2Coords(){
