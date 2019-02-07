@@ -2,8 +2,11 @@
 package julianhoerz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+
+import javax.swing.text.html.HTMLDocument.BlockElement;
 
 public class MapMatching{
 
@@ -161,7 +164,7 @@ public class MapMatching{
         NodeProj projection = new NodeProj();
         projection.setInitialCoords(observation.getLat(), observation.getLng());
 
-        HashMap<Integer,Boolean> checked = new HashMap<Integer,Boolean>();
+        HashMap<Integer,Integer[]> checked = new HashMap<Integer,Integer[]>();
 
         for(int p = 1; p < 9 ; p ++){
             for(int nodeid = keys[p][0] ; nodeid < keys[p][1]; nodeid ++){
@@ -172,18 +175,27 @@ public class MapMatching{
 
                 if(dist < this.discDistance){
                     double probability = calcCandidateProbability(dist);
-                    observation.addCandidate(new Candidate(new NodeProj(projection), probability));
-                    
+                    observation.addCandidate(new Candidate(new NodeProj(projection), probability));    
                 }
 
                 int startindex = graph.getNodeOffset(nodeid); 
                 int endindex = graph.getNodeOffset(nodeid+1);
                 for(int i = startindex; i < endindex; i ++){
                     int nodeid2 = graph.getEdges(i);
+                    
                     // String multipleid = nodeid2 + nodeid + "";
-                    // if(checked.containsKey(Integer.parseInt(multipleid))){
-                    //     continue;
-                    // }
+                    if(checked.containsKey(nodeid2)){
+                        Boolean done = false;
+                        Integer[] test = checked.get(nodeid2);
+                        for(int r = 0; r < test.length; r++){
+                            if(test[r] == nodeid){
+                                done = true;
+                            }
+                        }
+                        if(done){
+                            continue;
+                        }
+                    }
                     // multipleid = nodeid + nodeid2 + "";
                     // checked.put(Integer.parseInt(multipleid), true);
                     projection.setN2Coords(graph.getNodeLat(nodeid2), graph.getNodeLng(nodeid2));
