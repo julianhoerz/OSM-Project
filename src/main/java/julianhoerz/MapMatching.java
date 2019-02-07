@@ -2,7 +2,6 @@
 package julianhoerz;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -72,6 +71,8 @@ public class MapMatching{
         }
 
         ArrayList<double[]> coordinates = viterbiAlgorithmBwd(viterbiReferences,observations);
+
+        System.out.println("Map Matching Finished");
     
         return coordinates;
 
@@ -158,12 +159,13 @@ public class MapMatching{
 
         double dist;
         NodeProj projection = new NodeProj();
+        projection.setInitialCoords(observation.getLat(), observation.getLng());
 
         HashMap<Integer,Boolean> checked = new HashMap<Integer,Boolean>();
 
         for(int p = 1; p < 9 ; p ++){
             for(int nodeid = keys[p][0] ; nodeid < keys[p][1]; nodeid ++){
-                checked.put(nodeid, true);
+                
                 projection.setN1Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
                 projection.setN1ID(nodeid);
                 dist = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], observation.getLat(), observation.getLng());
@@ -171,21 +173,26 @@ public class MapMatching{
                 if(dist < this.discDistance){
                     double probability = calcCandidateProbability(dist);
                     observation.addCandidate(new Candidate(new NodeProj(projection), probability));
+                    
                 }
 
                 int startindex = graph.getNodeOffset(nodeid); 
                 int endindex = graph.getNodeOffset(nodeid+1);
                 for(int i = startindex; i < endindex; i ++){
                     int nodeid2 = graph.getEdges(i);
-                    if(checked.containsKey(nodeid2)){
-                        continue;
-                    }
+                    // String multipleid = nodeid2 + nodeid + "";
+                    // if(checked.containsKey(Integer.parseInt(multipleid))){
+                    //     continue;
+                    // }
+                    // multipleid = nodeid + nodeid2 + "";
+                    // checked.put(Integer.parseInt(multipleid), true);
                     projection.setN2Coords(graph.getNodeLat(nodeid2), graph.getNodeLng(nodeid2));
                     projection.setN2ID(nodeid2);
                     projection = mathFunctions.projection(projection);
                     if(projection.getProjectedCoords()[0] != -1d){
                         dist = calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], observation.getLat(), observation.getLng());
                         if(dist < this.discDistance){
+                            System.out.println("Candidate Coords: " + projection.getProjectedCoords()[0] + "," + projection.getProjectedCoords()[1]);
                             double probability = calcCandidateProbability(dist);
                             observation.addCandidate(new Candidate(new NodeProj(projection), probability));
                         }

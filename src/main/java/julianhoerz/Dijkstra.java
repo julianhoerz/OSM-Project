@@ -204,7 +204,7 @@ class Dijkstra {
 
 
 
-        System.out.println("Done with dijkstra");
+        // System.out.println("Done with dijkstra");
         
 
         return coordinates;

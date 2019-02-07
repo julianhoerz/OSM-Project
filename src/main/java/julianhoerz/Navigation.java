@@ -2,15 +2,11 @@ package julianhoerz;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.PriorityQueue;
+
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 
 
 

@@ -18,8 +18,31 @@
             <id>slimjars</id>
             <url>http://mvn.slimjars.com</url>
         </repository>
+        <!-- <repository>
+            <id>sun</id>
+                 https://mvnrepository.com/artifact/com.sun.net.httpserver/http<>
+        </repository> -->
     </repositories>
     <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20180813</version>
+            <scope>JSONObject</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.net.httpserver</groupId>
+            <artifactId>http</artifactId>
+            <version>20070405</version>
+            <scope>HttpHandler</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.net.httpserver</groupId>
+            <artifactId>http</artifactId>
+            <version>20070405</version>
+            <scope>HttpServer</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
