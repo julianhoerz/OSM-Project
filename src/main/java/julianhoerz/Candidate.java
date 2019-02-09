@@ -1,14 +1,23 @@
 package julianhoerz;
 
 
-public class Candidate{
+public class Candidate implements Comparable<Candidate>{
     private NodeProj position;
     private double probability;
+    private double distance;
 
-    Candidate(NodeProj position, double probability){
+    Candidate(NodeProj position, double probability,double distance){
         this.position = new NodeProj(position);
         this.probability = probability;
+        this.distance = distance;
     }
+
+    public int compareTo(Candidate o) {
+		if(this.distance < o.distance) {
+			return -1;
+		}
+		return 1;
+	}
 
     public void setPosition(NodeProj position){
         this.position = position;
@@ -16,6 +25,14 @@ public class Candidate{
 
     public NodeProj getPosition(){
         return this.position;
+    }
+
+    public void setDistance(double distance){
+        this.distance = distance;
+    }
+
+    public double getDistance(){
+        return this.distance;
     }
 
     public void setProbability(double probability){

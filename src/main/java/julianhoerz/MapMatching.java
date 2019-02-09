@@ -18,8 +18,8 @@ public class MapMatching{
 
     MapMatching(Graph graph){
         this.graph = graph;
-        this.sigma = 20; //Proposed by Paper
-        this.betha = 30; //Proposed by Paper
+        this.sigma = 8; //Proposed by Paper
+        this.betha = 15; //Proposed by Paper
         this.discDistance = 200; //Proposed by Paper
         this.mathFunctions = new MathFunctions();
         this.dijkstra = new Dijkstra(graph);
@@ -180,10 +180,10 @@ public class MapMatching{
                 projection.setN1ID(nodeid);
                 dist = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], observation.getLat(), observation.getLng());
 /////////////////////////////////////////////////////////////
-                // if(dist < this.discDistance){
-                //     double probability = calcCandidateProbability(dist);
-                //     observation.addCandidate(new Candidate(new NodeProj(projection), probability));    
-                // }
+                if(dist < this.discDistance){
+                    double probability = calcCandidateProbability(dist);
+                    observation.replaceCandidate(new Candidate(new NodeProj(projection), probability,dist));    
+                }
 ////////////////////////////////////////////////////////////
                 int startindex = graph.getNodeOffset(nodeid); 
                 int endindex = graph.getNodeOffset(nodeid+1);
@@ -204,14 +204,18 @@ public class MapMatching{
                         dist = calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], observation.getLat(), observation.getLng());
                         if(dist < this.discDistance){
                             //System.out.println("Candidate Coords: " + projection.getProjectedCoords()[0] + "," + projection.getProjectedCoords()[1]);
+                            // if(observation.getHighestCandidateDistance() > dist){
+
+                            // }
                             double probability = calcCandidateProbability(dist);
-                            observation.addCandidate(new Candidate(new NodeProj(projection), probability));
+                            observation.replaceCandidate(new Candidate(new NodeProj(projection), probability,dist));
                         }
                     }
                 }
                 checked.put(nodeid, paths);
             }
         }
+        System.out.println("Candidatenumber: " + observation.getCandidatesNumber());
     }
 
     private double calcCandidateProbability(double distance){
@@ -245,7 +249,7 @@ public class MapMatching{
         processedData.add(rawData.get(0));
         for(int i= 0; i < rawData.size()-1; i++){
             dist = this.mathFunctions.calculateDistance(rawData.get(i), rawData.get(i+1));
-            if(dist > this.sigma){
+            if(dist > 2*this.sigma){
                 processedData.add(rawData.get(i+1));
             }
         }

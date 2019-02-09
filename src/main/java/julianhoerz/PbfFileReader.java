@@ -22,7 +22,7 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
 public class PbfFileReader {
 
     private String[] HighwayTagsArray = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified","residential","service","motorway_link",
-                        "trunk_link", "primary_link", "secondary_link", "tertiary_link", "living_street", "rest_area", "services","motorway_junction"};
+                        "trunk_link", "primary_link", "secondary_link", "tertiary_link", "living_street", "rest_area", "services","motorway_junction","road"};
 
     private int[] HighwayTagsArrayNum;
 
