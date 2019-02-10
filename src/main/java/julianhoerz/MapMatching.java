@@ -14,12 +14,25 @@ public class MapMatching{
     private double discDistance; //Discard Distance for looking around GPS Data
     private MathFunctions mathFunctions;
     private Dijkstra dijkstra;
+    private int kNN;
 
 
     MapMatching(Graph graph){
         this.graph = graph;
         this.sigma = 8; //Proposed by Paper
         this.betha = 15; //Proposed by Paper
+        this.discDistance = 200; //Proposed by Paper
+        this.mathFunctions = new MathFunctions();
+        this.dijkstra = new Dijkstra(graph);
+        this.kNN = 5;
+    }
+
+
+    MapMatching(Graph graph, int sigma, int beta, int kNN){
+        this.graph = graph;
+        this.sigma = sigma; //Proposed by Paper
+        this.betha = beta; //Proposed by Paper
+        this.kNN = kNN;
         this.discDistance = 200; //Proposed by Paper
         this.mathFunctions = new MathFunctions();
         this.dijkstra = new Dijkstra(graph);
@@ -31,6 +44,7 @@ public class MapMatching{
         //if(rawData)
 
         System.out.println("Start MapMatching");
+        System.out.println("Parameters: Sigma:" + this.sigma + " Beta: " + this.betha + " kNN: " + this.kNN);
 
         rawData = preProcessing(rawData);
 
@@ -38,7 +52,7 @@ public class MapMatching{
         ArrayList<Observation> observations = new ArrayList<Observation>();
         
         for(int i = 0; i < observationsNumber; i ++){
-            observations.add(new Observation(rawData.get(i)[0],rawData.get(i)[1]));
+            observations.add(new Observation(rawData.get(i)[0],rawData.get(i)[1],this.kNN));
         }
 
         System.out.println("Find Candidates...");
@@ -54,14 +68,21 @@ public class MapMatching{
             transitionMatrices.add(transitionMatrix);
         }
 
-        System.out.println("Start Viterbi Algorithm...");
+        System.out.println("Start Viterbi Fwd-Algorithm...");
         ArrayList<double[][]> viterbiReferences = new ArrayList<double[][]>();
         /** Init ViterbiReferences with start candidates and their probabilities*/
         int candidatesNumber = observations.get(0).getCandidatesNumber();
         double[][] elem = new double[candidatesNumber][2];
+        double maxprob = 0;
         for(int i = 0; i < candidatesNumber; i ++){
             elem[i][0] = observations.get(0).getCandidate(i).getProbability();
             elem[i][1] = -1;
+            if(elem[i][0] > maxprob){
+                maxprob = elem[i][0];
+            }
+        }
+        for(int i = 0; i < candidatesNumber; i ++){
+            elem[i][0] /=  maxprob;
         }
         viterbiReferences.add(elem);
 
@@ -71,8 +92,11 @@ public class MapMatching{
             viterbiReferences.add(finalcost);
         }
 
+
+        System.out.println("Start Viterbi Bwd-Algorithm...");
         ArrayList<NodeProj> coordinates = viterbiAlgorithmBwd(viterbiReferences,observations);
 
+        System.out.println("Compose Route...");
         ArrayList<double[]> composedRoute = new ArrayList<double[]>();
         ArrayList<double[]> buff;
         for(int i = 0; i < coordinates.size()-1; i++){
@@ -102,6 +126,9 @@ public class MapMatching{
                 startindex = i;
             }
         }
+        if(startindex == -1){
+            System.out.println("No Matched Route found...");
+        }
 
         int nextindex;
         for(int i = coordsNumber-1; i >= 0; i--){
@@ -121,7 +148,7 @@ public class MapMatching{
         int initNumber = initialCost.length;
         int candidatesNumber = observation.getCandidatesNumber();
         double[][] finalCost = new double[candidatesNumber][2];
-
+        double maxprob = 0;
         double probability;
         for(int i = 0; i < candidatesNumber; i ++){
             finalCost[i][0] = 0;
@@ -133,6 +160,12 @@ public class MapMatching{
                 }
             }
             finalCost[i][0] *= observation.getCandidate(i).getProbability();
+            if(finalCost[i][0] > maxprob){
+                maxprob = finalCost[i][0];
+            }
+        }
+        for(int i = 0; i < candidatesNumber; i ++){
+            finalCost[i][0] /= maxprob;
         }
 
         return finalCost;
@@ -215,7 +248,7 @@ public class MapMatching{
                 checked.put(nodeid, paths);
             }
         }
-        System.out.println("Candidatenumber: " + observation.getCandidatesNumber());
+        // System.out.println("Candidatenumber: " + observation.getCandidatesNumber());
     }
 
     private double calcCandidateProbability(double distance){

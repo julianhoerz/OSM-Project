@@ -60,6 +60,17 @@ public class MapMatchingServer implements HttpHandler{
             ArrayList<double[]> rawData = new ArrayList<double[]>();
             // System.out.println(obj.getJSONArray("features"));
             JSONObject feature = obj.getJSONArray("features").getJSONObject(0);
+            if(feature.has("properties")){
+                JSONObject properties = feature.getJSONObject("properties");
+                if(properties.has("sigma") && properties.has("beta") && properties.has("kNN")){
+                    int sigma = properties.getInt("sigma");
+                    int beta = properties.getInt("beta");
+                    int kNN = properties.getInt("kNN");
+                    this.mapMatching = new MapMatching(graph, sigma, beta, kNN);
+                }
+            }
+
+
             JSONArray coordsarray = feature.getJSONObject("geometry").getJSONArray("coordinates");
             // System.out.println(coordsarray);
             for(int i = 0; i < coordsarray.length(); i ++){

@@ -160,6 +160,11 @@ class Dijkstra {
 			}
         }
 
+        if(!foundend1 && !foundend2){
+            System.out.println("No route found. End of Dijkstra...");
+            return new ArrayList<double[]>();
+        }
+
         int finalnode = endNode1;
         if(endNode2 != endNode1){
             if(endPoint.getOneway() == 1){

@@ -64,7 +64,9 @@ public class Navigation implements HttpHandler {
                 NodeProj startProj = this.dijkstra.findNextStreet(startLat, startLng);
                 NodeProj endProj = this.dijkstra.findNextStreet(endLat, endLng);
                 ArrayList<double[]> coordinates = this.dijkstra.dijkstraCoordinates(startProj, endProj);
-                geojson = this.draw.buildGeoJson(coordinates, startLat, startLng, endLat, endLng);
+                if(coordinates.size() >= 2){
+                    geojson = this.draw.buildGeoJson(coordinates, startLat, startLng, endLat, endLng);
+                }
                 // geojson = this.dijkstra.startDijkstra(startLat,startLng,endLat,endLng);
             }
         }
