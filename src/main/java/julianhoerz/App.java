@@ -1,7 +1,8 @@
 package julianhoerz;
 
-
+import julianhoerz.datastructure.*;
 import java.io.IOException;
+import julianhoerz.webserver.*;
 
 
 /**
@@ -66,7 +67,7 @@ public final class App {
         }
 
         
-        Server server = new Server(graph);
+        MainServer server = new MainServer(graph);
         server.start();
 
 

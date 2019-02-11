@@ -1,10 +1,10 @@
-package julianhoerz;
+package julianhoerz.algorithms;
 
 public class MathFunctions{
 
 
 
-    MathFunctions(){}
+    public MathFunctions(){}
 
         /**
      * Provides an orthogonal projection of the initial coordinates of 

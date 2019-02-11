@@ -1,4 +1,7 @@
-package julianhoerz;
+package julianhoerz.webserver;
+
+import julianhoerz.datastructure.*;
+import julianhoerz.algorithms.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

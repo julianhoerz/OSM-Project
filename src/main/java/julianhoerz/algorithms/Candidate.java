@@ -1,4 +1,5 @@
-package julianhoerz;
+package julianhoerz.algorithms;
+
 
 
 public class Candidate implements Comparable<Candidate>{
@@ -6,7 +7,7 @@ public class Candidate implements Comparable<Candidate>{
     private double probability;
     private double distance;
 
-    Candidate(NodeProj position, double probability,double distance){
+    public Candidate(NodeProj position, double probability,double distance){
         this.position = new NodeProj(position);
         this.probability = probability;
         this.distance = distance;

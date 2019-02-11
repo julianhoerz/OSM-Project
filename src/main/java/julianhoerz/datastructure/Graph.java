@@ -1,7 +1,7 @@
 
 
 
-package julianhoerz;
+package julianhoerz.datastructure;
 
 public class Graph {
 

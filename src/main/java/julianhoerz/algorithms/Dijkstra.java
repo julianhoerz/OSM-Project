@@ -1,4 +1,6 @@
-package julianhoerz;
+package julianhoerz.algorithms;
+
+import julianhoerz.datastructure.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +11,7 @@ import java.util.PriorityQueue;
 
 
 
-class Dijkstra {
+public class Dijkstra {
 
 
 
@@ -17,7 +19,7 @@ class Dijkstra {
     Draw draw;
     MathFunctions mathFunctions;
 
-    Dijkstra(Graph graph){
+    public Dijkstra(Graph graph){
         this.graph = graph;
         this.draw = new Draw(graph);
         this.mathFunctions = new MathFunctions();

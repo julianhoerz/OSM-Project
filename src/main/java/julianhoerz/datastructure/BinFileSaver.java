@@ -1,4 +1,4 @@
-package julianhoerz;
+package julianhoerz.datastructure;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,7 +10,7 @@ public class BinFileSaver {
 
     Graph graph;
 
-    BinFileSaver(Graph graph){
+    public BinFileSaver(Graph graph){
         this.graph = graph;
     }
 

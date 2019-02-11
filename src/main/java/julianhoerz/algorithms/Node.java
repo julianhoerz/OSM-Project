@@ -1,4 +1,4 @@
-package julianhoerz;
+package julianhoerz.algorithms;
 
 public class Node implements Comparable<Node>{
 	double distance;

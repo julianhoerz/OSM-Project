@@ -1,5 +1,5 @@
 
-package julianhoerz;
+package julianhoerz.datastructure;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;

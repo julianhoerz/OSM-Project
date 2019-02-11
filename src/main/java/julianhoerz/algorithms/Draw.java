@@ -1,12 +1,13 @@
-package julianhoerz;
+package julianhoerz.algorithms;
 
+import julianhoerz.datastructure.*;
 import java.util.ArrayList;
 
 public class Draw {
 
     private Graph graph;
 
-    Draw(Graph graph){
+    public Draw(Graph graph){
         this.graph = graph;
     }
 

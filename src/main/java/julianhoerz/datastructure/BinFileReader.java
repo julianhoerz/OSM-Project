@@ -1,4 +1,4 @@
-package julianhoerz;
+package julianhoerz.datastructure;
 
 
 
@@ -17,7 +17,7 @@ public class BinFileReader {
     private byte[] bytes_8;
     private int cnt;
 
-    BinFileReader(Graph graph){
+    public BinFileReader(Graph graph){
 
         this.bytes = new byte[4];
         this.bytes_8 = new byte[8];

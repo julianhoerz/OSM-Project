@@ -1,6 +1,7 @@
 
-package julianhoerz;
+package julianhoerz.algorithms;
 
+import julianhoerz.datastructure.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class MapMatching{
     private int kNN;
 
 
-    MapMatching(Graph graph){
+    public MapMatching(Graph graph){
         this.graph = graph;
         this.sigma = 8; //Proposed by Paper
         this.betha = 15; //Proposed by Paper
@@ -28,7 +29,7 @@ public class MapMatching{
     }
 
 
-    MapMatching(Graph graph, int sigma, int beta, int kNN){
+    public MapMatching(Graph graph, int sigma, int beta, int kNN){
         this.graph = graph;
         this.sigma = sigma; //Proposed by Paper
         this.betha = beta; //Proposed by Paper

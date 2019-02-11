@@ -1,5 +1,5 @@
 
-package julianhoerz;
+package julianhoerz.algorithms;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +12,7 @@ public class Observation {
     private int maxCandidatesNumber;
     private ArrayList<Candidate> candidates;
 
-    Observation(double lat, double lng){
+    public Observation(double lat, double lng){
         this.latitude = lat;
         this.longitude = lng;
         this.candidatesNumber = 0;
@@ -20,7 +20,7 @@ public class Observation {
         candidates = new ArrayList<Candidate>();
     }
 
-    Observation(double lat, double lng, int maxCandidatesNumber){
+    public Observation(double lat, double lng, int maxCandidatesNumber){
         this.latitude = lat;
         this.longitude = lng;
         this.candidatesNumber = 0;

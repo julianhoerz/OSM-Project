@@ -1,5 +1,7 @@
-package julianhoerz;
+package julianhoerz.webserver;
 
+import julianhoerz.datastructure.*;
+import julianhoerz.algorithms.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -11,7 +13,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 
 
-public class Navigation implements HttpHandler {
+public class NavigationServer implements HttpHandler {
 
 
 
@@ -19,7 +21,7 @@ public class Navigation implements HttpHandler {
     Dijkstra dijkstra;
     Draw draw;
 
-    Navigation(Graph graph){
+    public NavigationServer(Graph graph){
         this.graph = graph;
         this.dijkstra = new Dijkstra(graph);
         this.draw = new Draw(graph);

@@ -1,18 +1,18 @@
-package julianhoerz;
+package julianhoerz.webserver;
 
-
+import julianhoerz.datastructure.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 
-class Table implements HttpHandler {
+public class TableServer implements HttpHandler {
 
     private Graph graph;
 
 
-    Table(Graph graph){
+    public TableServer(Graph graph){
         this.graph = graph;
 
     }
