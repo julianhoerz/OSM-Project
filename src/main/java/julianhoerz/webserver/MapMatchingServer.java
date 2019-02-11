@@ -25,7 +25,7 @@ public class MapMatchingServer implements HttpHandler{
     MapMatchingServer(Graph graph){
         this.graph = graph;
         this.mapMatching = new MapMatching(graph);
-        this.draw = new Draw(graph);
+        this.draw = new Draw();
     }
 
     @Override

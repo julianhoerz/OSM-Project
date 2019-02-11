@@ -24,7 +24,7 @@ public class NavigationServer implements HttpHandler {
     public NavigationServer(Graph graph){
         this.graph = graph;
         this.dijkstra = new Dijkstra(graph);
-        this.draw = new Draw(graph);
+        this.draw = new Draw();
     }
 
     @Override
