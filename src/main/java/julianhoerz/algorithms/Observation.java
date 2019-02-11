@@ -4,6 +4,14 @@ package julianhoerz.algorithms;
 import java.util.ArrayList;
 import java.util.Collections;
 
+
+
+/**
+ * Datastructure of an observation in the Mapmatching Process.
+ * An observation is typically a gps-point which is not directly 
+ * on the road. 
+ * One Observation has coordinates (lat, lng) and k nearest candidates.
+ */
 public class Observation {
     private double latitude;
     private double longitude;
@@ -60,6 +68,10 @@ public class Observation {
         return this.candidates.get(i);
     }
 
+    /**
+     * Replace the Candidate with the lowest probability
+     * @param candidate
+     */
     public void replaceCandidate(Candidate candidate){
         this.candidates.add(candidate);
         this.candidatesNumber = this.candidates.size();

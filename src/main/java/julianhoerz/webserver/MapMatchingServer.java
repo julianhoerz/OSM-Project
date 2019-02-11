@@ -43,9 +43,6 @@ public class MapMatchingServer implements HttpHandler{
 
        // System.out.println(httpExchange.getRequestURI().toString());
 
-        // String url = httpExchange.getRequestURI().toString();
-        // String[] parts = url.split("\\/");
-
         StringBuilder body = new StringBuilder();
         try (InputStreamReader reader = new InputStreamReader(httpExchange.getRequestBody(),"UTF-8")) {
             char[] buffer = new char[256];
@@ -86,13 +83,13 @@ public class MapMatchingServer implements HttpHandler{
             }
 
             if(rawData.size() > 1){
-                System.out.println("First Coord: " + rawData.get(0)[0] + "," + rawData.get(0)[1]);
+                // System.out.println("First Coord: " + rawData.get(0)[0] + "," + rawData.get(0)[1]);
                 ArrayList<double[]> finalCoords;
                 Date date = new Date();
-                System.out.println("Startime: " + date.toString());
+                System.out.println("Mapmatching Startime: " + date.toString());
                 finalCoords = this.mapMatching.startMapMatching(rawData);
                 date = new Date();
-                System.out.println("Endtime: " + date.toString());
+                System.out.println("Mapmatching Endtime: " + date.toString());
                 geojson = this.draw.buildGeoJson(finalCoords,0d,0d,0d,0d);
                 // System.out.println(geojson);
             }

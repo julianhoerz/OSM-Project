@@ -93,12 +93,24 @@ public class MathFunctions{
         return proj;
     }
 
-
+    /**
+     * Calculate Distance in meters between two coordinates
+     * @param coord1
+     * @param coord2
+     * @return
+     */
     public double calculateDistance(double[] coord1, double[] coord2){
         return calculateDistance(coord1[0], coord1[1], coord2[0], coord2[1]);
     }
 
-
+    /**
+     * Calculate Distance in meters between two coordinates
+     * @param lat1
+     * @param lng1
+     * @param lat2
+     * @param lng2
+     * @return
+     */
     public double calculateDistance(double lat1, double lng1, double lat2, double lng2){
         double earthRadius = 6371000;
 

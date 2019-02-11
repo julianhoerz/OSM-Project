@@ -1,7 +1,13 @@
 package julianhoerz.algorithms;
 
 
-
+/**
+ * Datastructure for a possible Candidate of the Mapmatching process
+ * One candidate has:
+ * Position: Candidate is always on the road
+ * Probability: Depends on the distance to its observation
+ * Distance: Distance to its observation
+ */
 public class Candidate implements Comparable<Candidate>{
     private NodeProj position;
     private double probability;
@@ -13,6 +19,9 @@ public class Candidate implements Comparable<Candidate>{
         this.distance = distance;
     }
 
+    /**
+     * Sort Candidates by distance to get the k-Nearest Neighbors.
+     */
     public int compareTo(Candidate o) {
 		if(this.distance < o.distance) {
 			return -1;

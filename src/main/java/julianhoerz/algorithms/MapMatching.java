@@ -219,12 +219,10 @@ public class MapMatching{
                 projection.setN1Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
                 projection.setN1ID(nodeid);
                 dist = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], observation.getLat(), observation.getLng());
-/////////////////////////////////////////////////////////////
                 if(dist < this.discDistance){
                     double probability = calcCandidateProbability(dist);
                     observation.replaceCandidate(new Candidate(new NodeProj(projection), probability,dist));    
                 }
-////////////////////////////////////////////////////////////
                 int startindex = graph.getNodeOffset(nodeid); 
                 int endindex = graph.getNodeOffset(nodeid+1);
                 ArrayList<Integer> paths = new ArrayList<Integer>();

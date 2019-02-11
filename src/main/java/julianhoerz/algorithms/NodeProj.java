@@ -1,5 +1,12 @@
 package julianhoerz.algorithms;
 
+
+
+/**
+ * Node Projection datastructure to project a initial coordinate
+ * onto the line between node1 and node2. The resulting coordinates
+ * are called projected coords.
+ */
 public class NodeProj{
     double[] initialCoords;
     double[] projectedCoords;
@@ -20,6 +27,10 @@ public class NodeProj{
 
     int oneway;
 
+
+    /**
+     * Standardconstructor
+     */
     public NodeProj() {
         this.initialCoords = new double[2];
         this.initialCoords[0] = -1.0;
@@ -41,7 +52,13 @@ public class NodeProj{
         this.n2ID = -1;
         this.oneway = 2;
     }
+
+
     
+    /**
+     * Copyconstructor
+     * @param proj
+     */
     public NodeProj(NodeProj proj) {
         this.initialCoords = new double[2];
         this.initialCoords[0] = proj.getInitialCoords()[0];
@@ -63,6 +80,8 @@ public class NodeProj{
         this.n2ID = proj.getN2ID();
     }
     
+
+
     public double[] getCoordinates(){
         if(this.projectedCoords[0] == -1){
             return this.n1Coords;

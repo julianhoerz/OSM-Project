@@ -1,5 +1,9 @@
 package julianhoerz.algorithms;
 
+
+/**
+ * Node Class for Dijkstra Algorithm
+ */
 public class Node implements Comparable<Node>{
 	double distance;
 	int ID;

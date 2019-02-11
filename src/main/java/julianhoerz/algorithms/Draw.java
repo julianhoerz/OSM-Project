@@ -12,7 +12,24 @@ public class Draw {
     }
 
 
+    /**
+     * Builds up a geojson including all points in the coordinates array.
+     * 
+     * @param coordinates
+     * @param startLat
+     * @param startLng
+     * @param endLat
+     * @param endLng
+     * @return
+     */
     public String buildGeoJson(ArrayList<double[]> coordinates, double startLat, double startLng, double endLat, double endLng){
+        /**
+         * Right now: Just coordinates array is used.
+         * Nice to have: include also the initial coordinates and draw a dotted line
+         */
+        
+
+
         String geojson = "";
 
         String prestring = "";
@@ -40,53 +57,5 @@ public class Draw {
 
         return geojson;
     }
-
-
-
-
-    
-
-    // public String generateGeoJson(ArrayList<Integer> routenodes,NodeProj startProj, NodeProj endProj,double startLat, double startLng, double endLat, double endLng){
-    public String generateGeoJson(ArrayList<Integer> routenodes,NodeProj startProj, NodeProj endProj){
-        String geojson = "";
-
-        String prestring = "";
-        String poststring = "";
-        String data = "";
-        String position ="";
-
-        prestring = "{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\",\"properties\": {},\"geometry\": {\"type\": \"LineString\",\"coordinates\": [";
-
-        poststring = "]}}]}";
-
-        if(startProj.getProjectedCoords()[0] != -1){
-            data = "[" + startProj.getProjectedCoords()[1] + "," + startProj.getProjectedCoords()[0] + "]";
-        }
-        if(routenodes.size() > 0){
-            data = data + ",";
-        }
-
-
-        for(int i = 0; i < routenodes.size(); i++){
-            position = "[";
-            position = position + graph.getNodeLng(routenodes.get(i)) + "";
-            position = position + ",";
-            position = position + graph.getNodeLat(routenodes.get(i)) + "";
-            data = data + position + "]";
-            if(i < routenodes.size()-1){
-                data = data + ",";
-            }
-        }
-
-        if(endProj.getProjectedCoords()[0] != -1){
-            data = data + ",[" + endProj.getProjectedCoords()[1] + "," + endProj.getProjectedCoords()[0] + "]";
-        }
-
-        geojson = prestring + data + poststring;
-
-        return geojson;
-    
-    }
-
 
 }

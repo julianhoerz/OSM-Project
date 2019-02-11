@@ -10,9 +10,9 @@ import java.util.PriorityQueue;
 
 
 
-
-
-
+/**
+ * Functions for the Dijkstra-Algorithm. 
+ */
 public class Dijkstra {
 
 
@@ -47,8 +47,8 @@ public class Dijkstra {
 
 
     /** 
-     * Performs the Dijkstra Algorithm from StartPoint to the EndPoint
-     * and returns the shortest path distance.
+     * Performs the Dijkstra Algorithm from StartPoint to all EndPoints
+     * and returns the shortest path distances.
      */
     public double[] dijkstraDistance(NodeProj startPoint, ArrayList<NodeProj> endPoints){
         double[] distance = new double[endPoints.size()];
@@ -72,7 +72,7 @@ public class Dijkstra {
 
 
     /**
-     * 
+     * One to one dijkstra which uses the one to many dijkstra function. 
      */
     public ArrayList<double[]> oneToOneDijkstra(NodeProj startPoint, NodeProj endPoint){
         ArrayList<NodeProj> endPoints = new ArrayList<NodeProj>();
@@ -310,6 +310,15 @@ public class Dijkstra {
         return coordinates;
     }
 
+
+    /**
+     * Uses the Dijkstra-Calculations to build up the coordinates
+     * from startnode to endnode (endindex). Returns the final 
+     * route. 
+     * @param previousNode
+     * @param endindex
+     * @return
+     */
     private ArrayList<double[]> composeCoordinates(int previousNode[], int endindex){
         ArrayList<double[]> coordinates = new ArrayList<double[]>();
 
@@ -336,7 +345,14 @@ public class Dijkstra {
 
 
 
-
+    /**
+     * Check whether the two Points are on the same node or between the same nodes.
+     * If on the same node return true. If between the same road return true if there
+     * is a connection (must check for oneway).
+     * @param startPoint
+     * @param endPoint
+     * @return
+     */
     private boolean checkSpecialCase(NodeProj startPoint, NodeProj endPoint){
 
         if(endPoint.getN1ID() == startPoint.getN2ID() && endPoint.getN2ID() == startPoint.getN1ID()){
@@ -378,6 +394,13 @@ public class Dijkstra {
     }
 
 
+    /**
+     * Finds the nine frames around a given coordinate (lat, lng)
+     * and returns the indices of those frames. 
+     * @param lat
+     * @param lng
+     * @return
+     */
     private int[][] findFrames(double lat, double lng){
 
         int[][] keys = {{0, 0}, {0, 0}, {0, 0}, 
@@ -426,57 +449,11 @@ public class Dijkstra {
 
 
     /**
-     * Provides an orthogonal projection of the initial coordinates of 
-     * proj onto the line node1-node2. If no orthogonal projection is 
-     * possible return with projection coordinates -1.
-     * 
+     * Given one NodeProj with initial coords lat and lng and 
+     * nodeid1. This function calculates all projection of the 
+     * initial coords onto the line between node1 and all its 
+     * neighbors.
      */
-    private NodeProj projection(NodeProj proj){
-
-        double shift;
-
-        double[] coordsxy = new double[2];
-        double[] vec = new double[2];
-
-        double node1lat = proj.getN1Coords()[0];
-        double node1lng = proj.getN1Coords()[1];
-        double node2lat = proj.getN2Coords()[0];
-        double node2lng = proj.getN2Coords()[1];
-
-        /** Using Equirectangular projection: */
-        double phi = node1lat;
-        double lambda = node1lng;
-
-
-        double[] direction = new double[2];
-        double directionnorm;
-        direction[0] = (node2lat-phi);
-        direction[1] = (node2lng-lambda)*Math.cos(Math.toRadians(phi));
-        directionnorm = Math.sqrt(Math.pow(direction[0],2)+Math.pow(direction[1], 2));
-        direction[0] /= directionnorm;
-        direction[1] /= directionnorm;
-
-        vec[0] = proj.getInitialCoords()[0]-phi;
-        vec[1] = (proj.getInitialCoords()[1]-lambda)*Math.cos(Math.toRadians(phi));
-
-        shift = direction[0] * vec[0] + direction[1] * vec[1];
-
-        if(shift <= 0 || shift >= directionnorm){
-            /** Coordinates of orthogonal projection are not between node1-node2.*/
-            proj.setProjectedCoords(-1.0,-1.0);
-            return proj;
-        }
-
-        coordsxy[0] = shift*direction[0];
-        coordsxy[1] = shift*direction[1];
-
-        proj.setProjectedCoords(coordsxy[0] + phi, 
-                                coordsxy[1] / Math.cos(Math.toRadians(phi)) + lambda);
-
-        return proj;
-    }
-
-
     private NodeProj calculateOrthogonalPoint(NodeProj projection){
 
         int startindex = graph.getNodeOffset(projection.getN1ID());
@@ -495,7 +472,7 @@ public class Dijkstra {
             projbuff.setN2Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
             projbuff.setN2ID(nodeid);
 
-            projbuff = projection(projbuff);
+            projbuff = this.mathFunctions.projection(projbuff);
 
             if(projbuff.getProjectedCoords()[0] == -1.0){
                 continue;
@@ -514,6 +491,13 @@ public class Dijkstra {
         return projection;
     }
 
+
+    /**
+     * Given Lat and Long this will find the next NodeProjection.
+     * That means it will find the closest street. The closest street 
+     * can be between two nodes or can be one node itself.
+     * 
+     */
     public NodeProj findNextStreet(double lat, double lng){
 
         int[][] keys = findFrames(lat, lng);
@@ -572,6 +556,12 @@ public class Dijkstra {
         return projectionfinal;
     }
 
+
+    /**
+     * Checks and sets the OneWay-Flag if the given NodeProjection
+     * is either from node1 -> node2 oneway or the other way round.
+     * If the given NodeProjection has no second node it will do nothing.
+     */
     private void checkOneWay(NodeProj point){
         int startindex, endindex;
         boolean n12 = false;
