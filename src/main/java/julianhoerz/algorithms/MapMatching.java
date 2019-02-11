@@ -144,7 +144,13 @@ public class MapMatching{
         return coordinates;
     }
 
-
+    /**
+     * Calculates the probability 
+     * @param initialCost
+     * @param observation
+     * @param transitionMatrix
+     * @return
+     */
     private double[][] viterbiAlgorithmFwd(double[][] initialCost, Observation observation, double[][] transitionMatrix){
         int initNumber = initialCost.length;
         int candidatesNumber = observation.getCandidatesNumber();
@@ -172,7 +178,13 @@ public class MapMatching{
         return finalCost;
     }
 
-
+    /**
+     * Calculate all Transisiton Probabilities between the candidates of 
+     * two observations and returns the transition matrix. 
+     * @param observe1
+     * @param observe2
+     * @return
+     */
     private double[][] calcTransitionProbability(Observation observe1, Observation observe2){
         int candidates1 = observe1.getCandidatesNumber();
         int candidates2 = observe2.getCandidatesNumber();
@@ -181,7 +193,7 @@ public class MapMatching{
         double distance, directDistance;
         double[] pathDistance;
         ArrayList<NodeProj> endPoints;
-        directDistance = calculateDistance(observe1.getLat(), observe1.getLng(), observe2.getLat(), observe2.getLng());
+        directDistance = this.mathFunctions.calculateDistance(observe1.getLat(), observe1.getLng(), observe2.getLat(), observe2.getLng());
         for(int i = 0 ; i < candidates1 ; i ++){
             endPoints = new ArrayList<NodeProj>();
             for(int p = 0 ; p < candidates2 ; p++){
@@ -198,7 +210,12 @@ public class MapMatching{
     }
 
 
-
+    /**
+     * Find the k nearest neighbors of an observation. This can be 
+     * a node (e.g. intersection) or an orthogonal projection on a street.
+     * It stores the k nearest neighbors in the observation datastructure
+     * @param observation
+     */
     private void findCandidates(Observation observation){
         int[][] keys = this.graph.findFrames(observation.getLat(),observation.getLng());
 
@@ -218,7 +235,7 @@ public class MapMatching{
                 
                 projection.setN1Coords(graph.getNodeLat(nodeid), graph.getNodeLng(nodeid));
                 projection.setN1ID(nodeid);
-                dist = calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], observation.getLat(), observation.getLng());
+                dist = this.mathFunctions.calculateDistance(projection.getN1Coords()[0], projection.getN1Coords()[1], observation.getLat(), observation.getLng());
                 if(dist < this.discDistance){
                     double probability = calcCandidateProbability(dist);
                     observation.replaceCandidate(new Candidate(new NodeProj(projection), probability,dist));    
@@ -239,7 +256,7 @@ public class MapMatching{
                     projection.setN2ID(nodeid2);
                     projection = mathFunctions.projection(projection);
                     if(projection.getProjectedCoords()[0] != -1d){
-                        dist = calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], observation.getLat(), observation.getLng());
+                        dist = this.mathFunctions.calculateDistance(projection.getProjectedCoords()[0], projection.getProjectedCoords()[1], observation.getLat(), observation.getLng());
                         if(dist < this.discDistance){
                             //System.out.println("Candidate Coords: " + projection.getProjectedCoords()[0] + "," + projection.getProjectedCoords()[1]);
                             // if(observation.getHighestCandidateDistance() > dist){
@@ -256,31 +273,24 @@ public class MapMatching{
         // System.out.println("Candidatenumber: " + observation.getCandidatesNumber());
     }
 
+
+    /**
+     * Probability of an Candidate with respect to the distance to its observation
+     * @param distance
+     * @return
+     */
     private double calcCandidateProbability(double distance){
 
         return 1/(Math.sqrt(2*Math.PI)*this.sigma)*Math.exp(-0.5*(distance/this.sigma));
     }
 
 
-
-    private double calculateDistance(double lat1, double lng1, double lat2, double lng2){
-        double earthRadius = 6371000;
-
-        double dLat = Math.toRadians(lat2-lat1);
-        double dLng = Math.toRadians(lng2-lng1);
-
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLng/2) * Math.sin(dLng/2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-        float dist = (float) (earthRadius * c);
-    
-        return dist;
-    }
-
-
+    /**
+     * Preprocessing removes all observations that are closer than 2*sigma.
+     * This only occurs when a high sampling rate is used.
+     * @param rawData
+     * @return
+     */
     private ArrayList<double[]> preProcessing(ArrayList<double[]> rawData){
         ArrayList<double[]> processedData = new ArrayList<double[]>();
         double dist;
