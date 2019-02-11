@@ -5,7 +5,7 @@ import julianhoerz.algorithms.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-
+import java.util.Date;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -65,7 +65,12 @@ public class NavigationServer implements HttpHandler {
                 System.out.println("End: " + endLat + ", " + endLng);
                 NodeProj startProj = this.dijkstra.findNextStreet(startLat, startLng);
                 NodeProj endProj = this.dijkstra.findNextStreet(endLat, endLng);
-                ArrayList<double[]> coordinates = this.dijkstra.dijkstraCoordinates(startProj, endProj);
+                Date date = new Date();
+                System.out.println("Startime: " + date.toString());
+                ArrayList<double[]> coordinates = this.dijkstra.oneToOneDijkstra(startProj, endProj);
+                this.dijkstra.dijkstraDistance(startProj, endProj);
+                date = new Date();
+                System.out.println("Endtime: " + date.toString());
                 if(coordinates.size() >= 2){
                     geojson = this.draw.buildGeoJson(coordinates, startLat, startLng, endLat, endLng);
                 }

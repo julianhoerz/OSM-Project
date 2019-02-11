@@ -6,6 +6,42 @@ public class MathFunctions{
 
     public MathFunctions(){}
 
+
+    /**
+     * Returns True if all entries of booleanArray
+     * are false.
+     * @param booleanArray
+     * @return
+     */
+    public boolean checkFalse(boolean[] booleanArray){
+        boolean result = true;
+        for(int i = 0; i < booleanArray.length; i ++){
+            if(booleanArray[i] == true){
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     * Returns True if all entries of booleanArray
+     * are true.
+     * @param booleanArray
+     * @return
+     */
+    public boolean checkTrue(boolean[] booleanArray){
+        boolean result = true;
+        for(int i = 0; i < booleanArray.length; i ++){
+            if(booleanArray[i] == false){
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
         /**
      * Provides an orthogonal projection of the initial coordinates of 
      * proj onto the line node1-node2. If no orthogonal projection is 

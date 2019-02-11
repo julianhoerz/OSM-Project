@@ -101,7 +101,7 @@ public class MapMatching{
         ArrayList<double[]> composedRoute = new ArrayList<double[]>();
         ArrayList<double[]> buff;
         for(int i = 0; i < coordinates.size()-1; i++){
-            buff = this.dijkstra.dijkstraCoordinates(coordinates.get(i), coordinates.get(i+1));
+            buff = this.dijkstra.oneToOneDijkstra(coordinates.get(i), coordinates.get(i+1));
             for(int p = 0; p < buff.size(); p ++){
                 composedRoute.add(buff.get(p));
             }
@@ -178,12 +178,18 @@ public class MapMatching{
         int candidates2 = observe2.getCandidatesNumber();
 
         double[][] matrix = new double[candidates1][candidates2];
-        double distance, directDistance, pathDistance;
+        double distance, directDistance;
+        double[] pathDistance;
+        ArrayList<NodeProj> endPoints;
         directDistance = calculateDistance(observe1.getLat(), observe1.getLng(), observe2.getLat(), observe2.getLng());
         for(int i = 0 ; i < candidates1 ; i ++){
+            endPoints = new ArrayList<NodeProj>();
             for(int p = 0 ; p < candidates2 ; p++){
-                pathDistance = this.dijkstra.dijkstraDistance(observe1.getCandidate(i).getPosition(),observe2.getCandidate(p).getPosition());
-                distance = Math.abs(directDistance - pathDistance);
+                endPoints.add(observe2.getCandidate(p).getPosition());
+            }
+            pathDistance = this.dijkstra.dijkstraDistance(observe1.getCandidate(i).getPosition(),endPoints);
+            for(int p = 0 ; p < candidates2 ; p++){
+                distance = Math.abs(directDistance - pathDistance[p]);
                 matrix[i][p] = 1/this.betha * Math.exp(-distance/this.betha);
             }
         }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -85,8 +86,13 @@ public class MapMatchingServer implements HttpHandler{
             }
 
             if(rawData.size() > 1){
+                System.out.println("First Coord: " + rawData.get(0)[0] + "," + rawData.get(0)[1]);
                 ArrayList<double[]> finalCoords;
+                Date date = new Date();
+                System.out.println("Startime: " + date.toString());
                 finalCoords = this.mapMatching.startMapMatching(rawData);
+                date = new Date();
+                System.out.println("Endtime: " + date.toString());
                 geojson = this.draw.buildGeoJson(finalCoords,0d,0d,0d,0d);
                 // System.out.println(geojson);
             }
