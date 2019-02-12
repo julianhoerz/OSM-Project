@@ -17,18 +17,18 @@ public class MapMatching{
     private Dijkstra dijkstra;
     private int kNN;
 
-
+    /** Constructor for standard parameters */
     public MapMatching(Graph graph){
         this.graph = graph;
-        this.sigma = 8; //Proposed by Paper
-        this.betha = 15; //Proposed by Paper
+        this.sigma = 4; //Proposed by Paper
+        this.betha = 4; //Proposed by Paper
         this.discDistance = 200; //Proposed by Paper
         this.mathFunctions = new MathFunctions();
         this.dijkstra = new Dijkstra(graph);
         this.kNN = 5;
     }
 
-
+    /** Constructor for userspecific parameters */
     public MapMatching(Graph graph, int sigma, int beta, int kNN){
         this.graph = graph;
         this.sigma = sigma; //Proposed by Paper
@@ -40,6 +40,15 @@ public class MapMatching{
     }
 
 
+    /**
+     * Mapmatching Process containing the following steps:
+     * - Preprocessing
+     * - Read Observations (rawData)
+     * - Find Candidates
+     * - Calculate Candidate Probabilities
+     * - Calculate Transistion Probabilities
+     * - Viterbi to find most probable route
+     */
     public ArrayList<double[]> startMapMatching(ArrayList<double[]> rawData){
         // Check data...
         //if(rawData)
@@ -113,7 +122,12 @@ public class MapMatching{
 
     }
 
-
+    /**
+     * Reads out the most probable candidate of each observation
+     * @param refs
+     * @param observations
+     * @return
+     */
     private ArrayList<NodeProj> viterbiAlgorithmBwd(ArrayList<double[][]> refs, ArrayList<Observation> observations){
         int coordsNumber = refs.size();
         ArrayList<NodeProj> coordinates = new ArrayList<NodeProj>();
