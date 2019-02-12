@@ -11,10 +11,11 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 stuttgart.pbf
+stuttgart.bin
 germany.pbf
 germany.bin
-*.bin
-*.pbf
+bremen.bin
+bremen.pbf
 
 
 #
