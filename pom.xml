@@ -29,7 +29,6 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20180813</version>
-            <scope>JSONObject</scope>
         </dependency>
         <dependency>
             <groupId>com.sun.net.httpserver</groupId>
